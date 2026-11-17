@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>樱花飘落音乐相册</title>
+    <meta name="description" content="唯美的樱花飘落动画配合3D旋转相册和背景音乐播放器" />
+    <meta name="keywords" content="樱花,音乐播放器,3D相册,动画效果" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link type="text/css" href="./css/style1.css" rel="stylesheet" />
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            position: relative;
+            overflow: hidden;
+        }
+        .box {
+            left: 0;
+            top: 0;
+        }
+        @media (max-width: 768px) {
+            #jsi-cherry-container.container { overflow: hidden; }
+        }
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .box {
+                width: 80vw !important;
+                height: 80vw !important;
+                margin-left: 10vw !important;
+                margin-top: 30vh !important;
+                max-width: 250px !important;
+                max-height: 250px !important;
+            }
+            
+            .minbox {
+                width: 40vw !important;
+                height: 40vw !important;
+                left: 20vw !important;
+                top: 15vw !important;
+                max-width: 125px !important;
+                max-height: 125px !important;
+            }
+            
+            .minbox li {
+                width: 40vw !important;
+                height: 40vw !important;
+                max-width: 125px !important;
+                max-height: 125px !important;
+            }
+            
+            .maxbox {
+                width: 80vw !important;
+                height: 40vw !important;
+                max-width: 250px !important;
+                max-height: 125px !important;
+            }
+            
+            .maxbox li {
+                width: 40vw !important;
+                height: 40vw !important;
+                max-width: 125px !important;
+                max-height: 125px !important;
+            }
+            
+            .box:hover ol li:nth-child(1), 
+            .box:hover ol li:nth-child(2), 
+            .box:hover ol li:nth-child(3), 
+            .box:hover ol li:nth-child(4), 
+            .box:hover ol li:nth-child(5), 
+            .box:hover ol li:nth-child(6) {
+                width: 60vw !important;
+                height: 60vw !important;
+                max-width: 200px !important;
+                max-height: 200px !important;
+                left: -10vw !important;
+                top: -10vw !important;
+            }
+            
+            .m-main {
+                width: 280px;
+                right: 10px;
+            }
+            
+            /* 移动端音频播放提示 */
+            .mobile-audio-tip {
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                right: 20px;
+                background: rgba(0,0,0,0.8);
+                color: white;
+                padding: 10px;
+                border-radius: 5px;
+                text-align: center;
+                font-size: 14px;
+                z-index: 1000;
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body><a href="./index.html" target="_top" style="position:fixed;left:16px;top:16px;z-index:99999;color:#fff;background:#0008;border:1px solid #ffffff35;border-radius:18px;padding:8px 14px;font:12px Microsoft YaHei;text-decoration:none">← 回到工作台</a>
+    
+    <div class="m-main">
+		<div class="player">
+			<button type="button" id="js-play" aria-label="播放音乐" title="播放">
+				<img src="./img-one/开始.png" alt="播放" id="img1"/>
+            </button>
+			<button type="button" id="js-pause" aria-label="暂停音乐" title="暂停">
+				<img src="./img-one/暂停.png" alt="暂停" id="img2"/>
+			</button>
+			<div class="play-box">
+				<div class="left">
+					<p class="timeline" role="progressbar" aria-label="音乐播放进度" tabindex="0"><span style=""></span></p>
+					<div class="info">
+						<span class="size">00:00</span>
+						<span class="timeshow">--:--</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="video">
+			<audio preload="metadata" name="media" id="js-video">
+                您的浏览器不支持音频播放。
+            </audio>
+		</div>
+	</div>
+    <div id="jsi-cherry-container" class="container">
+        <div class="box">
+            <ul class="minbox">
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ul>
+            <ol class="maxbox">
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ol>
+        </div>
+    </div>
+    <script>
+        $(function () {
+            AudioControl('js-video');
+
+            function AudioControl(id) {
+                var audio = document.getElementById(id);
+                var $timeline = $('.timeline');
+                var $timeshow = $('.timeshow');
+                var $size = $('.size');
+                
+                // 随机音乐播放列表
+                var playlist = [];
+                var currentIndex = 0;
+                var shuffledPlaylist = [];
+                var shuffleIndex = 0;
+                var autoplayEnabled = true;
+                var shuffleEnabled = true;
+                
+                // 基础诊断：监听错误与中断
+                audio.addEventListener('error', function(){
+                    var err = audio.error;
+                    console.log('[AudioError]', err && err.code, err, 'src=', audio.currentSrc || audio.src);
+                });
+                audio.addEventListener('abort', function(){
+                    console.log('[AudioAbort] src=', audio.currentSrc || audio.src);
+                });
+
+                // 从配置文件加载播放列表
+                function loadPlaylist() {
+                    return fetch('./playlist.json', { cache: 'no-cache' })
+                        .then(function(res) { return res.ok ? res.json() : Promise.reject(res.status); })
+                        .then(function(data) {
+                            playlist = Array.isArray(data.playlist) ? data.playlist.filter(Boolean) : [];
+                            autoplayEnabled = data.autoplay !== false;
+                            shuffleEnabled = data.shuffle !== false;
+                            // 暴露给全局，便于移动端自动播放解锁逻辑判断
+                            window.autoplayEnabled = autoplayEnabled;
+                            
+                            if (playlist.length > 0) {
+                                shuffledPlaylist = shuffleEnabled ? shuffleArray([...playlist]) : [...playlist];
+                                loadCurrentSong();
+                                
+                                // 派发事件
+                                var event = new CustomEvent('cube:playlist-ready');
+                                document.dispatchEvent(event);
+                            }
+                        })
+                        .catch(function() {
+                            console.log('播放列表加载失败，使用默认音乐');
+                        });
+                }
+
+                // 洗牌算法
+                function shuffleArray(arr) {
+                    for (var i = arr.length - 1; i > 0; i--) {
+                        var j = Math.floor(Math.random() * (i + 1));
+                        var temp = arr[i];
+                        arr[i] = arr[j];
+                        arr[j] = temp;
+                    }
+                    return arr;
+                }
+
+                // 规范化音频URL，将扩展名统一为小写.mp3，避免服务端按扩展名解析MIME时出错
+                function normalizeAudioUrl(p) {
+                    if (typeof p !== 'string') return p;
+                    return p.replace(/\.mp3$/i, '.mp3');
+                }
+
+                // 加载当前歌曲（避免重复设置导致的中断）
+                function loadCurrentSong() {
+                    if (shuffledPlaylist.length === 0) return;
+                    var songPath = shuffledPlaylist[shuffleIndex % shuffledPlaylist.length];
+                    songPath = normalizeAudioUrl(songPath);
+                    var current = audio.currentSrc || audio.src || '';
+                    // 仅当路径变化时才重新加载
+                    if (!current.endsWith(songPath)) {
+                        try { audio.pause(); } catch(e) {}
+                        audio.src = songPath;
+                        audio.load();
+                    }
+                }
+
+                // 播放下一首
+                function playNext() {
+                    if (shuffledPlaylist.length === 0) return;
+                    try { audio.pause(); } catch(e) {}
+                    shuffleIndex = (shuffleIndex + 1) % shuffledPlaylist.length;
+                    
+                    // 如果循环完一轮且启用随机，重新洗牌
+                    if (shuffleIndex === 0 && shuffleEnabled) {
+                        shuffledPlaylist = shuffleArray([...playlist]);
+                    }
+                    
+                    loadCurrentSong();
+                    audio.play().catch(function(e) {
+                        console.log('播放下一首失败:', e);
+                    });
+                }
+
+                // 歌曲结束事件
+                $(audio).on('ended', function() {
+                    playNext();
+                });
+
+                // 初始化播放列表
+                loadPlaylist();
+
+                function format(s) {
+                    if (!isFinite(s) || s < 0) return '--:--';
+                    s = Math.floor(s);
+                    var MM = Math.floor(s / 60);
+                    var SS = s % 60;
+                    if (MM < 10) MM = '0' + MM;
+                    if (SS < 10) SS = '0' + SS;
+                    return (MM + ':' + SS);
+                }
+
+                function updateProgressUI() {
+                    var d = audio.duration;
+                    var t = audio.currentTime;
+                    $size.text(format(t));
+                    $timeshow.text(format(d));
+                    var percent = d > 0 ? Math.max(0, Math.min(1, t / d)) : 0;
+                    $timeline.children().css({ width: (percent * 100).toFixed(2) + '%' });
+                }
+
+                // 元数据加载完成
+                $(audio).on('loadedmetadata', function () {
+                    updateProgressUI();
+                });
+                // 进度更新
+                $(audio).on('timeupdate', function () {
+                    updateProgressUI();
+                });
+
+                // 播放/暂停
+                $(document).on('click', '#js-play', function () {
+                    if (audio.src === '' || audio.src === window.location.href) {
+                        // 如果还未加载任何歌曲，加载并播放
+                        // 调用 loadPlaylist 已在初始化执行，确保有歌可播
+                    }
+                    audio.play();
+                    $('#img1').css('display', 'none');
+                    $('#img2').css('display', 'block');
+                });
+                $(document).on('click', '#js-pause', function () {
+                    audio.pause();
+                    $('#img1').css('display', 'block');
+                    $('#img2').css('display', 'none');
+                });
+
+                // 当可以播放时，更新UI状态
+                $(audio).on('play', function(){
+                    $('#img1').css('display', 'none');
+                    $('#img2').css('display', 'block');
+                });
+                $(audio).on('pause', function(){
+                    $('#img1').css('display', 'block');
+                    $('#img2').css('display', 'none');
+                });
+
+                // 键盘可访问性：空格/回车触发播放/暂停
+                $(document).on('keydown', '#js-play, #js-pause', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        if (audio.paused) {
+                            $('#js-play').trigger('click');
+                        } else {
+                            $('#js-pause').trigger('click');
+                        }
+                    }
+                });
+
+                // 进度条交互（Pointer事件）
+                function seekByClientX(clientX, el) {
+                    var rect = el.getBoundingClientRect();
+                    var x = clientX - rect.left;
+                    var W = rect.width;
+                    var clamped = Math.max(0, Math.min(W, x));
+                    var d = audio.duration;
+                    if (isFinite(d) && d > 0) {
+                        var place = clamped / W;
+                        audio.currentTime = place * d;
+                    }
+                }
+                $timeline.on('pointerdown', function (e) {
+                    this.setPointerCapture && this.setPointerCapture(e.pointerId);
+                    seekByClientX(e.clientX, this);
+                });
+                $timeline.on('pointermove', function (e) {
+                    if (e.buttons & 1) {
+                        seekByClientX(e.clientX, this);
+                    }
+                });
+                $timeline.on('pointerup pointercancel', function (e) {
+                    // no-op, UI由timeupdate驱动
+                });
+
+                // 键盘左右键快退快进5秒
+                $timeline.on('keydown', function (e) {
+                    var d = audio.duration;
+                    if (!isFinite(d) || d <= 0) return;
+                    if (e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        audio.currentTime = Math.max(0, audio.currentTime - 5);
+                    } else if (e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        audio.currentTime = Math.min(d, audio.currentTime + 5);
+                    }
+                });
+                
+                // 创建移动端提示元素
+                var mobileTip = document.createElement('div');
+                mobileTip.className = 'mobile-audio-tip';
+                mobileTip.textContent = '点击屏幕开始播放音乐';
+                document.body.appendChild(mobileTip);
+
+                // 增强移动端自动播放解锁
+                function tryPlayWithMobileUnlock() {
+                    audio.play().then(function(){
+                        mobileTip.style.display = 'none';
+                    }).catch(function(){
+                        mobileTip.style.display = 'block';
+                        
+                        var unlock = function(){
+                            audio.play().then(function(){
+                                mobileTip.style.display = 'none';
+                            }).catch(function(){
+                                mobileTip.textContent = '请点击播放按钮开始音乐';
+                                setTimeout(function(){
+                                    mobileTip.style.display = 'none';
+                                }, 3000);
+                            }).finally(function(){
+                                window.removeEventListener('touchstart', unlock, true);
+                                window.removeEventListener('click', unlock, true);
+                            });
+                        };
+                        
+                        window.addEventListener('touchstart', unlock, true);
+                        window.addEventListener('click', unlock, true);
+                    });
+                }
+
+                // 在播放列表加载完成后尝试自动播放
+                document.addEventListener('cube:playlist-ready', function(){
+                    if (window.autoplayEnabled) {
+                        setTimeout(tryPlayWithMobileUnlock, 500);
+                    }
+                });
+                
+                // 为移动端播放控制增强触摸事件
+                $('#js-play, #js-pause').on('touchend', function(e) {
+                    e.preventDefault();
+                    $(this).trigger('click');
+                });
+            }
+        })
+        var RENDERER = {
+            INIT_CHERRY_BLOSSOM_COUNT: 30,
+            MAX_ADDING_INTERVAL: 10,
+
+            init: function () {
+                this.setParameters();
+                this.reconstructMethods();
+                this.createCherries();
+                this.render();
+
+            },
+            setParameters: function () {
+                this.$container = $('#jsi-cherry-container');
+                this.width = this.$container.width();
+                this.height = this.$container.height();
+                this.context = $('<canvas />')
+                    .attr({
+                        width: this.width,
+                        height: this.height
+                    })
+                    .appendTo(this.$container)
+                    .get(0)
+                    .getContext('2d');
+                this.cherries = [];
+                this.maxAddingInterval = Math.round(
+                    (this.MAX_ADDING_INTERVAL * 1000) / this.width
+                );
+                this.addingInterval = this.maxAddingInterval;
+            },
+            reconstructMethods: function () {
+                this.render = this.render.bind(this);
+            },
+            createCherries: function () {
+                for (
+                    var i = 0,
+                        length = Math.round(
+                            (this.INIT_CHERRY_BLOSSOM_COUNT * this.width) / 1000
+                        ); i < length; i++
+                ) {
+                    this.cherries.push(new CHERRY_BLOSSOM(this, true));
+                }
+            },
+            render: function () {
+                requestAnimationFrame(this.render);
+                this.context.clearRect(0, 0, this.width, this.height);
+
+                this.cherries.sort(function (cherry1, cherry2) {
+                    return cherry1.z - cherry2.z;
+                });
+                for (var i = this.cherries.length - 1; i >= 0; i--) {
+                    if (!this.cherries[i].render(this.context)) {
+                        this.cherries.splice(i, 1);
+                    }
+                }
+                if (--this.addingInterval == 0) {
+                    this.addingInterval = this.maxAddingInterval;
+                    this.cherries.push(new CHERRY_BLOSSOM(this, false));
+                }
+            }
+        };
+        var CHERRY_BLOSSOM = function (renderer, isRandom) {
+            this.renderer = renderer;
+            this.init(isRandom);
+        };
+        CHERRY_BLOSSOM.prototype = {
+            FOCUS_POSITION: 300,
+            FAR_LIMIT: 600,
+            MAX_RIPPLE_COUNT: 100,
+            RIPPLE_RADIUS: 100,
+            SURFACE_RATE: 0.5,
+            SINK_OFFSET: 20,
+
+            init: function (isRandom) {
+                this.x = this.getRandomValue(
+                    -this.renderer.width,
+                    this.renderer.width
+                );
+                this.y = isRandom ?
+                    this.getRandomValue(0, this.renderer.height) :
+                    this.renderer.height * 1.5;
+                this.z = this.getRandomValue(0, this.FAR_LIMIT);
+                this.vx = this.getRandomValue(-2, 2);
+                this.vy = -2;
+                this.theta = this.getRandomValue(0, Math.PI * 2);
+                this.phi = this.getRandomValue(0, Math.PI * 2);
+                this.psi = 0;
+                this.dpsi = this.getRandomValue(Math.PI / 600, Math.PI / 300);
+                this.opacity = 0;
+                this.endTheta = false;
+                this.endPhi = false;
+                this.rippleCount = 0;
+
+                var axis = this.getAxis(),
+                    theta =
+                    this.theta +
+                    (Math.ceil(
+                            -(this.y + this.renderer.height * this.SURFACE_RATE) / this.vy
+                        ) *
+                        Math.PI) /
+                    500;
+                theta %= Math.PI * 2;
+
+                this.offsetY =
+                    40 * (theta <= Math.PI / 2 || theta >= (Math.PI * 3) / 2 ? -1 : 1);
+                this.thresholdY =
+                    this.renderer.height / 2 +
+                    this.renderer.height * this.SURFACE_RATE * axis.rate;
+                this.entityColor = this.renderer.context.createRadialGradient(
+                    0,
+                    40,
+                    0,
+                    0,
+                    40,
+                    80
+                );
+                this.entityColor.addColorStop(
+                    0,
+                    'hsl(330, 70%, ' + 50 * (0.3 + axis.rate) + '%)'
+                );
+                this.entityColor.addColorStop(
+                    0.05,
+                    'hsl(330, 40%,' + 55 * (0.3 + axis.rate) + '%)'
+                );
+                this.entityColor.addColorStop(
+                    1,
+                    'hsl(330, 20%, ' + 70 * (0.3 + axis.rate) + '%)'
+                );
+                this.shadowColor = this.renderer.context.createRadialGradient(
+                    0,
+                    40,
+                    0,
+                    0,
+                    40,
+                    80
+                );
+                this.shadowColor.addColorStop(
+                    0,
+                    'hsl(330, 40%, ' + 30 * (0.3 + axis.rate) + '%)'
+                );
+                this.shadowColor.addColorStop(
+                    0.05,
+                    'hsl(330, 40%,' + 30 * (0.3 + axis.rate) + '%)'
+                );
+                this.shadowColor.addColorStop(
+                    1,
+                    'hsl(330, 20%, ' + 40 * (0.3 + axis.rate) + '%)'
+                );
+            },
+            getRandomValue: function (min, max) {
+                return min + (max - min) * Math.random();
+            },
+            getAxis: function () {
+                var rate = this.FOCUS_POSITION / (this.z + this.FOCUS_POSITION),
+                    x = this.renderer.width / 2 + this.x * rate,
+                    y = this.renderer.height / 2 - this.y * rate;
+                return {
+                    rate: rate,
+                    x: x,
+                    y: y
+                };
+            },
+            renderCherry: function (context, axis) {
+                context.beginPath();
+                context.moveTo(0, 40);
+                context.bezierCurveTo(-60, 20, -10, -60, 0, -20);
+                context.bezierCurveTo(10, -60, 60, 20, 0, 40);
+                context.fill();
+
+                for (var i = -4; i < 4; i++) {
+                    context.beginPath();
+                    context.moveTo(0, 40);
+                    context.quadraticCurveTo(i * 12, 10, i * 4, -24 + Math.abs(i) * 2);
+                    context.stroke();
+                }
+            },
+            render: function (context) {
+                var axis = this.getAxis();
+
+                if (
+                    axis.y == this.thresholdY &&
+                    this.rippleCount < this.MAX_RIPPLE_COUNT
+                ) {
+                    context.save();
+                    context.lineWidth = 2;
+                    context.strokeStyle =
+                        'hsla(0, 0%, 100%, ' +
+                        (this.MAX_RIPPLE_COUNT - this.rippleCount) /
+                        this.MAX_RIPPLE_COUNT +
+                        ')';
+                    context.translate(
+                        axis.x +
+                        this.offsetY * axis.rate * (this.theta <= Math.PI ? -1 : 1),
+                        axis.y
+                    );
+                    context.scale(1, 0.3);
+                    context.beginPath();
+                    context.arc(
+                        0,
+                        0,
+                        (this.rippleCount / this.MAX_RIPPLE_COUNT) *
+                        this.RIPPLE_RADIUS *
+                        axis.rate,
+                        0,
+                        Math.PI * 2,
+                        false
+                    );
+                    context.stroke();
+                    context.restore();
+                    this.rippleCount++;
+                }
+                if (axis.y < this.thresholdY || !this.endTheta || !this.endPhi) {
+                    if (this.y <= 0) {
+                        this.opacity = Math.min(this.opacity + 0.01, 1);
+                    }
+                    context.save();
+                    context.globalAlpha = this.opacity;
+                    context.fillStyle = this.shadowColor;
+                    context.strokeStyle =
+                        'hsl(330, 30%,' + 40 * (0.3 + axis.rate) + '%)';
+                    context.translate(
+                        axis.x,
+                        Math.max(axis.y, this.thresholdY + this.thresholdY - axis.y)
+                    );
+                    context.rotate(Math.PI - this.theta);
+                    context.scale(axis.rate * -Math.sin(this.phi), axis.rate);
+                    context.translate(0, this.offsetY);
+                    this.renderCherry(context, axis);
+                    context.restore();
+                }
+                context.save();
+                context.fillStyle = this.entityColor;
+                context.strokeStyle = 'hsl(330, 40%,' + 70 * (0.3 + axis.rate) + '%)';
+                context.translate(
+                    axis.x,
+                    axis.y + Math.abs(this.SINK_OFFSET * Math.sin(this.psi) * axis.rate)
+                );
+                context.rotate(this.theta);
+                context.scale(axis.rate * Math.sin(this.phi), axis.rate);
+                context.translate(0, this.offsetY);
+                this.renderCherry(context, axis);
+                context.restore();
+
+                if (this.y <= -this.renderer.height / 4) {
+                    if (!this.endTheta) {
+                        for (
+                            var theta = Math.PI / 2, end = (Math.PI * 3) / 2; theta <= end; theta += Math.PI
+                        ) {
+                            if (this.theta < theta && this.theta + Math.PI / 200 > theta) {
+                                this.theta = theta;
+                                this.endTheta = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!this.endPhi) {
+                        for (
+                            var phi = Math.PI / 8, end = (Math.PI * 7) / 8; phi <= end; phi += (Math.PI * 3) / 4
+                        ) {
+                            if (this.phi < phi && this.phi + Math.PI / 200 > phi) {
+                                this.phi = Math.PI / 8;
+                                this.endPhi = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!this.endTheta) {
+                    if (axis.y == this.thresholdY) {
+                        this.theta +=
+                            (Math.PI / 200) *
+                            (this.theta < Math.PI / 2 ||
+                                (this.theta >= Math.PI && this.theta < (Math.PI * 3) / 2) ?
+                                1 :
+                                -1);
+                    } else {
+                        this.theta += Math.PI / 500;
+                    }
+                    this.theta %= Math.PI * 2;
+                }
+                if (this.endPhi) {
+                    if (this.rippleCount == this.MAX_RIPPLE_COUNT) {
+                        this.psi += this.dpsi;
+                        this.psi %= Math.PI * 2;
+                    }
+                } else {
+                    this.phi += Math.PI / (axis.y == this.thresholdY ? 200 : 500);
+                    this.phi %= Math.PI;
+                }
+                if (this.y <= -this.renderer.height * this.SURFACE_RATE) {
+                    this.x += 2;
+                    this.y = -this.renderer.height * this.SURFACE_RATE;
+                } else {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                }
+                return (
+                    this.z > -this.FOCUS_POSITION &&
+                    this.z < this.FAR_LIMIT &&
+                    this.x < this.renderer.width * 1.5
+                );
+            }
+        };
+        $(function () {
+            console.log(6666);
+            RENDERER.init();
+            
+            // 窗口resize优化：重设canvas尺寸和樱花动画
+            $(window).on('resize', function() {
+                // 清空现有canvas并重新初始化
+                RENDERER.$container.empty();
+                RENDERER.setParameters();
+                RENDERER.createCherries();
+                // render方法已经在运行，无需重新启动
+            });
+
+            // 新增：旋转立方体照片轮播（支持更多图片）
+            // 将照片清单和切换间隔放在 cube-photos.json 中，便于日后维护
+            
+            // 图片预加载缓存
+            var imageCache = {};
+            function preloadImage(src) {
+                if (imageCache[src]) return Promise.resolve(imageCache[src]);
+                return new Promise(function(resolve, reject) {
+                    var img = new Image();
+                    img.onload = function() {
+                        imageCache[src] = img;
+                        resolve(img);
+                    };
+                    img.onerror = reject;
+                    img.src = src;
+                });
+            }
+            
+            // 批量预加载图片组
+            function preloadImageSet(imageList) {
+                var promises = imageList.slice(0, 12).map(function(src) { // 预加载前12张，避免内存过载
+                    return preloadImage(src).catch(function() { return null; }); // 忽略加载失败的图片
+                });
+                return Promise.all(promises);
+            }
+            
+            function applyCubeSet(start, list) {
+                var n = list.length;
+                // 分离内外侧对应图片：内侧用0开头，外侧用去掉0的版本
+                var innerImages = list.filter(function(path) {
+                    var filename = path.split('/').pop();
+                    return filename.match(/^0\d+\./);
+                });
+                var outerImages = list.filter(function(path) {
+                    var filename = path.split('/').pop();
+                    return filename.match(/^\d+\./) && !filename.match(/^0\d+\./);
+                });
+                
+                // 建立配对关系：内侧01.jpg对应外侧1.jpg
+                function findPairedImage(innerPath) {
+                    var innerFilename = innerPath.split('/').pop();
+                    var targetFilename = innerFilename.replace(/^0/, ''); // 去掉开头的0
+                    return outerImages.find(function(path) {
+                        return path.split('/').pop() === targetFilename;
+                    });
+                }
+                
+                // 提前预加载即将显示的图片
+                var upcomingImages = [];
+                for (var i = 0; i < 6; i++) {
+                    var innerIndex = (start + i) % innerImages.length;
+                    var innerImg = innerImages[innerIndex];
+                    var outerImg = findPairedImage(innerImg) || innerImg;
+                    upcomingImages.push(innerImg, outerImg);
+                }
+                
+                // 异步预加载，然后应用样式
+                preloadImageSet(upcomingImages).then(function() {
+                    for (var i = 0; i < 6; i++) {
+                        var innerIndex = (start + i) % innerImages.length;
+                        var innerImg = innerImages[innerIndex];
+                        var outerImg = findPairedImage(innerImg) || innerImg;
+                        
+                        $('.minbox li').eq(i).css({
+                            'background-image': 'url(' + innerImg + ')',
+                            'background-repeat': 'no-repeat',
+                            'background-position': '0 0',
+                            'background-size': 'cover'
+                        });
+                        $('.maxbox li').eq(i).css({
+                            'background-image': 'url(' + outerImg + ')',
+                            'background-repeat': 'no-repeat',
+                            'background-position': '0 0',
+                            'background-size': 'cover'
+                        });
+                    }
+                });
+            }
+            var cubeSlideTimer;
+            function startCubeSlideshow(list, intervalMs) {
+                if (cubeSlideTimer) clearInterval(cubeSlideTimer);
+                // 基于配对后的内侧图片数量推进
+                var innerImages = list.filter(function(path){
+                    var filename = path.split('/').pop();
+                    return filename.match(/^0\d+\./);
+                });
+                var n = innerImages.length || list.length;
+                var startIndex = 0;
+                // 先预加载第一组
+                applyCubeSet(startIndex, list);
+                var step = n >= 6 ? 6 : 1; // 至少能填满内层
+                cubeSlideTimer = setInterval(function(){
+                    if (!document.hidden && n > 0) {
+                        var nextIndex = (startIndex + step) % n;
+                        // 预加载下一组
+                        (function(preIndex){
+                            var upcoming = [];
+                            for (var i = 0; i < 6; i++) {
+                                var innerIdx = (preIndex + i) % innerImages.length;
+                                var innerImg = innerImages[innerIdx];
+                                // 与 applyCubeSet 同步的配对逻辑
+                                var outerImages = list.filter(function(path) {
+                                    var filename = path.split('/').pop();
+                                    return filename.match(/^\d+\./) && !filename.match(/^0\d+\./);
+                                });
+                                function findPairedImage(innerPath) {
+                                    var innerFilename = innerPath.split('/').pop();
+                                    var targetFilename = innerFilename.replace(/^0/, '');
+                                    return outerImages.find(function(path) {
+                                        return path.split('/').pop() === targetFilename;
+                                    }) || innerPath;
+                                }
+                                var outerImg = findPairedImage(innerImg);
+                                upcoming.push(innerImg, outerImg);
+                            }
+                            preloadImageSet(upcoming);
+                        })(nextIndex);
+
+                        startIndex = nextIndex;
+                        applyCubeSet(startIndex, list);
+                    }
+                }, intervalMs);
+            }
+
+            function initCubePhotosFromConfig() {
+                var defaultPhotos = [
+                    './img-one/01.jpg','./img-one/02.jpg','./img-one/03.jpg','./img-one/04.jpg','./img-one/05.jpg','./img-one/06.jpg',
+                    './img-one/1.jpg','./img-one/2.jpg','./img-one/3.jpg','./img-one/4.jpg','./img-one/5.jpg','./img-one/6.jpg'
+                ];
+                return fetch('./cube-photos.json', { cache: 'no-cache' })
+                    .then(function(res){ return res.ok ? res.json() : Promise.reject(res.status); })
+                    .then(function(data){
+                        var list = Array.isArray(data.photos) ? data.photos.filter(Boolean) : [];
+                        var interval = Number(data.slideInterval) || 4000;
+                        if (!list.length) list = defaultPhotos;
+                        startCubeSlideshow(list, interval);
+                    })
+                    .catch(function(){
+                        startCubeSlideshow(defaultPhotos, 4000);
+                    });
+            }
+
+            initCubePhotosFromConfig();
+        });
+    </script>
+
+    </script>
+
+</body>
+ 
+</html>

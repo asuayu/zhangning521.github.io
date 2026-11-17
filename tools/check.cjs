@@ -1,0 +1,35 @@
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict'),cp=require('node:child_process');
+const root=path.resolve(__dirname,'..'),read=name=>fs.readFileSync(path.join(root,name),'utf8');
+for(const name of ['index.html','workbench.html','album.html','together.html']){
+ for(const m of read(name).matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)){
+  if(!m[1].trim()||m[0].includes('type="application/json"'))continue;new vm.Script(m[1],{filename:name});
+ }
+}
+new vm.Script(read('together.js'));
+const workbench=read('workbench.html'),raw=JSON.parse(workbench.match(/<script id="wb-data" type="application\/json">([\s\S]*?)<\/script>/)[1]);
+assert.equal(raw.events.length,0);assert.equal(raw.todos.length,0);
+assert.ok(!/http:\/\/127\.0\.0\.1|_feishu_caldav\.json|_calendar_data\.js/.test(workbench),'public page has no local sync or account dependencies');
+assert.ok(workbench.includes('let COURSES = [];')&&!/const COURSES\s*=\s*\[/.test(workbench),'private course roster is not embedded');
+const originalJS=[...workbench.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].at(-1)[1];
+const prefix=originalJS.slice(0,originalJS.indexOf('/* ========== 事件绑定 / 启动 ========== */'));
+const storage={settings:{termStart:'2026-09-01',courseRoster:[{id:'offline-a',name:'测试线下班',mode:'offline',keys:['测试线下班'],color:'#218478'}]},events:[{id:'lesson',title:'测试线下班物理',start:'2026-11-14T10:00:00+08:00',end:'2026-11-14T12:00:00+08:00'}],money:{},overtime:{},routes:['家 → 校区 → 家']};
+const context={window:{},console,localStorage:{getItem:key=>key==='kejian.online.v1'?JSON.stringify(storage):'1',setItem(){},removeItem(){}},document:{querySelector:selector=>{assert.equal(selector,'#wb-data');return {textContent:JSON.stringify(raw)};}}};
+vm.runInNewContext(prefix+'\nwindow.test={courseInstances,moneyRows,routeChoices,csvCourse};};window.__wbInit(null);',context);
+assert.equal(context.window.test.courseInstances().length,1);
+assert.ok(context.window.test.csvCourse('2026-11').includes('"120","2"'));
+assert.ok(context.window.test.routeChoices().includes('家 → 校区 → 家'));
+assert.equal(context.window.test.moneyRows('2026-11')[0].amount,150);
+for(const asset of ['css','img-one','mp3','cube-photos.json','playlist.json'])assert.ok(fs.existsSync(path.join(root,asset)));
+assert.ok(read('album.html').includes('樱花飘落音乐相册'));
+const legacy=read('album.html').replace(/<a href="\.\/index\.html" target="_top"[\s\S]*?<\/a>/,'').replaceAll('\r\n','\n');
+assert.equal(require('node:crypto').createHash('sha256').update(legacy).digest('hex'),'c2e606d644217e7ac7b559510df00d15d57b2868d37ac42aa7ad02c5da0f53a2','legacy album retained except return link and line endings');
+const lifePrefix=read('together.js').slice(0,read('together.js').indexOf("$('#open-memory').onclick"));
+const lifeContext={document:{querySelector(){return null;},querySelectorAll(){return [];}},console};vm.runInNewContext(lifePrefix+'\nthis.tests={validate,nextAnniversary,daysBetween};',lifeContext);
+assert.equal(lifeContext.tests.nextAnniversary('2020-02-29','2026-02-01'),'2026-02-28');
+assert.equal(lifeContext.tests.nextAnniversary('2027-05-20','2026-11-17'),'2027-05-20');
+assert.equal(lifeContext.tests.daysBetween('2026-11-17','2026-11-16'),1);
+assert.throws(()=>lifeContext.tests.validate({version:1,memories:[],plans:[],dates:[],photos:[{id:'x',src:'javascript:alert(1)'}]}));
+const valid=lifeContext.tests.validate({version:1,memories:[{id:'a',date:'2026-11-17',title:'晚饭',text:'一起做饭'}],photos:[],dates:[],plans:[]});assert.equal(valid.memories[0].text,'一起做饭');
+const tracked=cp.execFileSync('git',['ls-files','--cached','--others','--exclude-standard'],{cwd:root,encoding:'utf8'}).trim().split(/\r?\n/);
+assert.ok(!tracked.some(name=>name.startsWith('private-export/')||name.includes('_feishu_caldav')||name.endsWith('.personal.json')));
+console.log('PASS: script syntax, empty public data, no localhost/credentials/private roster, imported roster and durations, 150-yuan defaults, routes, old album/assets, life backup validation and date calculations, ignored personal export.');

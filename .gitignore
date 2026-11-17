@@ -1,0 +1,7 @@
+private-export/
+*.personal.json
+.env
+.env.*
+__pycache__/
+node_modules/
+qa-output/
