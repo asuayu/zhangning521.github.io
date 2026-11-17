@@ -246,6 +246,25 @@ textarea.imp:focus{outline:none;border-color:var(--accent);background:#fff}
 .kk-route-manager{padding:15px 22px;border-bottom:1px solid var(--line-2);background:#fbfdfb;display:grid;gap:10px}.kk-route-manager>div:first-child{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.kk-route-manager strong{font-size:12px;font-weight:500}.kk-route-manager>div:first-child>span{font-size:10px;color:var(--muted)}.kk-route-add{display:flex;align-items:center;gap:9px}.kk-route-add input{font-size:12px;padding:8px 11px;min-width:0;flex:1;max-width:380px;border:1px solid var(--line);border-radius:8px;background:white}.kk-route-add .btn{font-size:11px}#kk-custom-routes{display:flex;gap:7px;flex-wrap:wrap;font-size:10px}#kk-custom-routes .tag{font-weight:400;background:var(--accent-soft);color:var(--accent)}
 @media(max-width:760px){.kk-route-manager{padding:14px 16px}}
 
+
+/* 工作台右栏待办 */
+.kk-today-foot{margin-top:0}
+.kk-dashboard-todos{border-top:1px solid var(--line-2);display:flex;flex-direction:column;flex:1;min-height:0}
+.kk-dashboard-todos .kk-panel-head{padding-top:18px;padding-bottom:12px;align-items:flex-start}
+.kk-dashboard-todos .kk-panel-head p{line-height:1.6}
+.kk-todo-list{max-height:245px;overflow:auto;padding:0 20px 8px}
+.kk-todo-item{display:flex;gap:9px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line-2);cursor:pointer}
+.kk-todo-item:last-child{border-bottom:0}
+.kk-todo-item input{appearance:auto;width:15px;height:15px;margin:2px 0 0;accent-color:var(--accent);flex:none;cursor:pointer}
+.kk-todo-item>span{min-width:0;flex:1}
+.kk-todo-item strong{display:block;font-size:11px;font-weight:500;line-height:1.65;overflow-wrap:anywhere;color:#526c5f}
+.kk-todo-item small{display:block;font-size:10px;color:var(--muted);line-height:1.7;margin-top:3px;overflow-wrap:anywhere}
+.kk-todo-item.overdue strong,.kk-todo-item.overdue .kk-todo-due{color:var(--warn)}
+.kk-todo-empty{padding:15px 0 20px;font-size:11px;color:var(--muted);line-height:1.8}
+.kk-todo-add{display:flex;gap:7px;padding:12px 20px 17px;margin-top:auto;border-top:1px solid var(--line-2)}
+.kk-todo-add input{flex:1;min-width:0;width:100%;border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:11px;background:#fff}
+.kk-todo-add .btn{flex:none}
+@media(max-width:760px){.kk-todo-list{padding-left:18px;padding-right:18px}.kk-todo-add{padding-left:18px;padding-right:18px}}
 </style>
 </head>
 <body>
@@ -269,7 +288,13 @@ textarea.imp:focus{outline:none;border-color:var(--accent);background:#fff}
   <div class="kk-period"><div><span class="kk-caption">统计月份</span><div class="months" id="month-bar"></div></div><span class="kk-local"><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></svg>浏览器保存 · 自动保留手动修正</span></div>
   <section id="kk-overview" data-page="overview">
     <div class="kk-dashboard"><section class="card kk-calendar"><div class="kk-panel-head"><div><h2>一周课表</h2><p id="kk-week-label"></p></div><div class="kk-week-nav"><button data-week="-1" aria-label="上一周">‹</button><button data-week="today">本周</button><button data-week="1" aria-label="下一周">›</button></div></div><div class="kk-course-scroll"><div id="kk-week" class="kk-course-calendar kk-overview-calendar"></div></div><div class="kk-panel-foot"><div class="kk-legend"><span><i></i>线下课程</span><span><i class="online"></i>线上课程</span><span><i class="other"></i>行程 / 其他</span></div><button class="kk-link" data-view="courses">全部课程 <svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></button></div></section>
-    <section class="card kk-today"><div class="kk-panel-head"><div><h2>今日安排</h2><p id="kk-today-label"></p></div><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg></div><div id="kk-today"></div><div class="kk-today-foot">留一点空白，给自己充充电。</div></section></div>
+    <section class="card kk-today"><div class="kk-panel-head"><div><h2>今日安排</h2><p id="kk-today-label"></p></div><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg></div><div id="kk-today"></div><div class="kk-today-foot">留一点空白，给自己充充电。</div>
+      <section class="kk-dashboard-todos" aria-labelledby="kk-todo-heading">
+        <div class="kk-panel-head"><div><h2 id="kk-todo-heading">待办事项 <span class="kk-count" id="kk-todo-count">0</span></h2><p id="kk-todo-hint">一件一件，慢慢做好。</p></div><button class="kk-link" data-view="todos">全部待办</button></div>
+        <div class="kk-todo-list" id="kk-todo-list"></div>
+        <form class="kk-todo-add" id="kk-todo-add"><input id="kk-todo-title" aria-label="新增待办事项" placeholder="记下一件要做的事…" autocomplete="off" maxlength="300"><button class="btn sm" type="submit">添加</button></form>
+      </section>
+    </section></div>
     <section class="card kk-preview"><div class="kk-panel-head"><div><h2>待报销 <span class="kk-count" id="kk-pending-count">0</span></h2><p>按月整理路途费与差旅支出</p></div><button class="kk-link" data-view="expenses">全部报销 <svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></button></div><div class="tbl-wrap" id="kk-expenses-preview"></div></section>
     <section class="kk-bottom-stats" aria-label="工作台统计"><h2>工作台统计</h2><div class="grid4" id="metrics"></div></section>
   </section>
@@ -1013,7 +1038,25 @@ function renderOt() {
   $('#o-table').innerHTML=`<thead><tr><th>日期</th><th>星期</th><th>类型</th><th>时间</th><th>课程名称</th><th>时长</th><th>调休申请标记</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.applied?'kk-marked':''}"><td class="num">${key(r.i.start)}</td><td class="muted">${WD[(r.i.start.getDay()+6)%7]}</td><td><span class="ot-tag ${r.type==='周末'?'wk':'hd'}">${r.type}</span></td><td class="num">${hm(r.i.start)}–${hm(r.i.end)}</td><td class="wrap kk-ot-title">${esc(courseTitle(r.i))}</td><td class="num">${hoursFromMinutes(minutesOf(r.i))} 小时</td><td><label class="kk-check"><input type="checkbox" data-ot="${esc(r.i.sid)}" ${r.applied?'checked':''}><span>${r.applied?'已申请调休':'未申请调休'}</span></label></td></tr>`).join('')||'<tr><td colspan="7"><div class="empty">当前筛选下没有加班记录。</div></td></tr>'}</tbody>`;
 }
 
+function kkRenderTodo() {
+  const now=new Date();
+  const pending=rawTodos().filter(t=>!t.done).slice().sort((a,b)=>String(a.due||"9999").localeCompare(String(b.due||"9999")));
+  $('#kk-todo-count').textContent=pending.length;
+  $('#kk-todo-hint').textContent=pending.length?'按截止时间排列 · 勾选即可完成':'一件一件，慢慢做好。';
+  $('#kk-todo-list').innerHTML=pending.length?pending.slice(0,5).map(t=>{
+    const overdue=t.due&&new Date(t.due+'T23:59:59')<now;
+    return `<label class="kk-todo-item ${overdue?'overdue':''}"><input type="checkbox" data-todo-toggle="${esc(t.id)}" aria-label="完成：${esc(t.title)}"><span><strong>${esc(t.title)}</strong>${t.due?`<small class="kk-todo-due">${overdue?'已逾期 · ':''}截止 ${esc(t.due)}</small>`:''}${t.src?`<small>来自 ${esc(t.src)}</small>`:''}</span></label>`;
+  }).join(''):'<div class="kk-todo-empty">暂无未完成事项，留一点时间给自己。</div>';
+  if(pending.length>5)$('#kk-todo-hint').textContent=`还有 ${pending.length} 条未完成 · 这里显示前 5 条`;
+}
+function toggleTodo(id) {
+  const todo=rawTodos().find(t=>t.id===id);
+  if(!todo)return;
+  todo.done=!todo.done;save();renderTodo();renderMetrics();
+}
+
 function renderTodo() {
+  kkRenderTodo();
   const list = rawTodos().slice();
   const open = list.filter(t => !t.done);
   $("#td-hint").textContent = `${open.length} 条未完成 / 共 ${list.length} 条`;
@@ -1275,12 +1318,21 @@ function bindEdit() {
 
 /* ========== 待办 ========== */
 function bindTodo() {
+  $('#kk-todo-list').addEventListener('change',e=>{
+    const input=e.target.closest('[data-todo-toggle]');
+    if(input)toggleTodo(input.dataset.todoToggle);
+  });
+  $('#kk-todo-add').addEventListener('submit',e=>{
+    e.preventDefault();const input=$('#kk-todo-title'),title=input.value.trim();
+    if(!title)return;
+    rawTodos().push({id:'t'+Date.now(),title,due:'',src:''});
+    save();input.value='';renderTodo();renderMetrics();toast('已加一条待办');
+  });
   $("#td-list").addEventListener("click", e => {
     const tg = e.target.closest("[data-toggle]");
     const rm = e.target.closest("[data-rm]");
     if (tg) {
-      const list = rawTodos(); const t = list.find(x => x.id === tg.dataset.toggle);
-      if (t) { t.done = !t.done; save(); renderTodo(); renderMetrics(); }
+      toggleTodo(tg.dataset.toggle);
     }
     if (rm) {
       S.todos = rawTodos().filter(x => x.id !== rm.dataset.rm);
@@ -1578,6 +1630,7 @@ render();
 (function seedDerived() {
   const have = new Set(rawTodos().map(t => t.id));
   derivedTodos().forEach(t => { if (!have.has(t.id)) { rawTodos().push(t); have.add(t.id); } });
+  renderTodo();renderMetrics();
 })();
 
 /* 先从数据文件捞回上次的修改，再触发自动同步 */
