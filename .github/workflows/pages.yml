@@ -1,0 +1,54 @@
+name: Sync Feishu and deploy Pages
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: node tools/check.cjs && node tools/check-calendar-sync.cjs && python -m unittest discover -s tools -p 'test_*.py'
+      - run: node tools/package-pages.cjs
+      - name: Read CalDAV and encrypt snapshot
+        timeout-minutes: 7
+        env:
+          FEISHU_CALDAV_USERNAME: ${{ secrets.FEISHU_CALDAV_USERNAME }}
+          FEISHU_CALDAV_PASSWORD: ${{ secrets.FEISHU_CALDAV_PASSWORD }}
+          CALENDAR_PASSPHRASE: ${{ secrets.CALENDAR_PASSPHRASE }}
+          TZ: Asia/Shanghai
+        shell: bash
+        run: |
+          if [ -z "$FEISHU_CALDAV_USERNAME$FEISHU_CALDAV_PASSWORD$CALENDAR_PASSPHRASE" ]; then
+            echo '::notice::CalDAV Secrets are not configured yet. Publishing the website without a new snapshot.'
+            python tools/cloud-feishu.py --retain-published
+          else
+            python tools/cloud-feishu.py --output "$RUNNER_TEMP/calendar.private.json"
+            node tools/encrypt-calendar.cjs "$RUNNER_TEMP/calendar.private.json" _site/calendar/feishu.enc.json
+          fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
