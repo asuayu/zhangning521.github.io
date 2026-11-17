@@ -265,6 +265,7 @@ textarea.imp:focus{outline:none;border-color:var(--accent);background:#fff}
 .kk-todo-add input{flex:1;min-width:0;width:100%;border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:11px;background:#fff}
 .kk-todo-add .btn{flex:none}
 @media(max-width:760px){.kk-todo-list{padding-left:18px;padding-right:18px}.kk-todo-add{padding-left:18px;padding-right:18px}}
+.kk-day-head{align-items:flex-start;gap:8px}.kk-day-head>div:first-child{min-width:0}.kk-day-head p{line-height:1.7}.kk-day-nav{gap:2px}.kk-day-nav button{padding:4px;min-width:24px}.kk-day-nav [data-day="today"]{font-size:10px}.kk-day-nav button:disabled{cursor:default;opacity:.4}
 </style>
 </head>
 <body>
@@ -288,7 +289,7 @@ textarea.imp:focus{outline:none;border-color:var(--accent);background:#fff}
   <div class="kk-period"><div><span class="kk-caption">统计月份</span><div class="months" id="month-bar"></div></div><span class="kk-local"><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></svg>浏览器保存 · 自动保留手动修正</span></div>
   <section id="kk-overview" data-page="overview">
     <div class="kk-dashboard"><section class="card kk-calendar"><div class="kk-panel-head"><div><h2>一周课表</h2><p id="kk-week-label"></p></div><div class="kk-week-nav"><button data-week="-1" aria-label="上一周">‹</button><button data-week="today">本周</button><button data-week="1" aria-label="下一周">›</button></div></div><div class="kk-course-scroll"><div id="kk-week" class="kk-course-calendar kk-overview-calendar"></div></div><div class="kk-panel-foot"><div class="kk-legend"><span><i></i>线下课程</span><span><i class="online"></i>线上课程</span><span><i class="other"></i>行程 / 其他</span></div><button class="kk-link" data-view="courses">全部课程 <svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></button></div></section>
-    <section class="card kk-today"><div class="kk-panel-head"><div><h2>今日安排</h2><p id="kk-today-label"></p></div><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg></div><div id="kk-today"></div><div class="kk-today-foot">留一点空白，给自己充充电。</div>
+    <section class="card kk-today"><div class="kk-panel-head kk-day-head"><div><h2 id="kk-day-heading">今日安排</h2><p id="kk-today-label"></p></div><nav class="kk-week-nav kk-day-nav" aria-label="切换每日安排"><button data-day="-1" aria-label="查看前一天安排" title="前一天">‹</button><button data-day="today" aria-label="返回今日安排">今天</button><button data-day="1" aria-label="查看后一天安排" title="后一天">›</button></nav></div><div id="kk-today"></div><div class="kk-today-foot">留一点空白，给自己充充电。</div>
       <section class="kk-dashboard-todos" aria-labelledby="kk-todo-heading">
         <div class="kk-panel-head"><div><h2 id="kk-todo-heading">待办事项 <span class="kk-count" id="kk-todo-count">0</span></h2><p id="kk-todo-hint">一件一件，慢慢做好。</p></div><button class="kk-link" data-view="todos">全部待办</button></div>
         <div class="kk-todo-list" id="kk-todo-list"></div>
@@ -1102,6 +1103,7 @@ let kkView = 'overview';
 let kkWeek = sow(new Date());
 let kkCourseWeek = sow(new Date());
 let kkAgendaWeek = sow(new Date());
+let kkDayOffset = 0;
 const kkViews = {
   overview:['工作台','把时间，留给教学。','看清每一节课，安排每一段路，也不漏掉每一笔报销。'],
   courses:['我的课表','每一节课，都心中有数。','点击课程可修正标题、分类与时间，或隐藏已取消的课。'],
@@ -1130,14 +1132,22 @@ function kkSetView(view) {
   $('#kk-sidebar').classList.remove('open'); $('#kk-scrim').hidden = true;
   if (location.hash !== '#' + view) history.replaceState(null,'','#' + view);
 }
+function kkRenderDay() {
+  const now=new Date(),date=addDays(d0(now),kkDayOffset);
+  const title=kkDayOffset===0?'今日安排':kkDayOffset===1?'明日安排':kkDayOffset===-1?'昨日安排':`${date.getMonth()+1}月${date.getDate()}日安排`;
+  $('#kk-day-heading').textContent=title;
+  $('#kk-today-label').textContent=`${date.getFullYear()} 年 ${date.getMonth()+1} 月 ${date.getDate()} 日 · ${WD[(date.getDay()+6)%7]}`;
+  $('[data-day="today"]').disabled=kkDayOffset===0;
+  const dayItems=instances().filter(i=>i.start<addDays(date,1)&&i.end>date);
+  const empty=kkDayOffset===0?'今天':kkDayOffset===1?'明天':kkDayOffset===-1?'昨天':'这一天';
+  $('#kk-today').innerHTML=dayItems.length?dayItems.map(i=>`<button class="kk-timeline" data-kk-edit="${esc(i.sid)}"><time>${hm(i.start)}–${hm(i.end)}${kkDayOffset===0?(i.end<=now?' · 已结束':i.start<=now?' · 进行中':''):''}</time><strong>${esc(i.patch.title||i.ev.title||'未命名安排')}</strong><small>${esc(locationOf(i)||(courseOf(i)?.mode==='online'?'线上授课':'未填写地点'))}</small></button>`).join(''):`<div class="kk-empty">${kkSvg('sun')}<strong>${empty}暂时没有安排</strong>留一点时间备课，也留一点给自己。</div>`;
+}
 function kkRenderDashboard() {
-  const now = new Date(), todayKey = key(now), all = instances();
+  const now = new Date(), all = instances();
   $('#kk-date').textContent = `${now.getFullYear()} 年 ${now.getMonth()+1} 月 ${now.getDate()} 日 · ${WD[(now.getDay()+6)%7]}`;
-  $('#kk-today-label').textContent = `${now.getMonth()+1} 月 ${now.getDate()} 日 · ${WD[(now.getDay()+6)%7]}`;
   $('#kk-week-label').textContent = `${key(kkWeek).replaceAll('-','.')} — ${key(addDays(kkWeek,6)).replaceAll('-','.')}`;
   $('#kk-week').innerHTML=weekGrid(all,kkWeek);
-  const today = all.filter(i=>i.start < addDays(d0(now),1) && i.end > d0(now));
-  $('#kk-today').innerHTML = today.length ? today.map(i=>`<button class="kk-timeline" data-kk-edit="${esc(i.sid)}"><time>${hm(i.start)}–${hm(i.end)}${i.end<=now?' · 已结束':i.start<=now?' · 进行中':''}</time><strong>${esc(i.patch.title || i.ev.title || '未命名安排')}</strong><small>${esc(locationOf(i) || (courseOf(i)?.mode==='online'?'线上授课':'未填写地点'))}</small></button>`).join('') : `<div class="kk-empty">${kkSvg('sun')}<strong>今天暂时没有安排</strong>留一点时间备课，也留一点给自己。</div>`;
+  kkRenderDay();
   const pending = moneyRows(curMonth).filter(r=>!r.reimbursed);
   $('#kk-pending-count').textContent = pending.length;
   $('#kk-expenses-preview').innerHTML = pending.length ? `<table class="tbl"><thead><tr><th>日期</th><th>报销事项</th><th>往返路线</th><th>金额</th><th>状态</th></tr></thead><tbody>${pending.slice(0,4).map(r=>`<tr><td class="num">${key(r.date)}</td><td class="wrap">${esc(r.title)}</td><td class="muted">${esc(r.route||"待填写路线")}</td><td class="num">${r.amount?money(r.amount):'<span class="muted">待填写</span>'}</td><td><span class="kk-status">${esc(r.status)}</span></td></tr>`).join('')}</tbody></table>` : '<div class="kk-empty">这个月的待报销已经整理好了。</div>';
@@ -1150,6 +1160,8 @@ function kkRenderDashboard() {
 }
 function kkBind() {
   document.addEventListener('click',e=>{
+    const day=e.target.closest('[data-day]');
+    if(day){kkDayOffset=day.dataset.day==='today'?0:kkDayOffset+Number(day.dataset.day);kkRenderDay();return;}
     const nav = e.target.closest('[data-view]');
     if(nav){kkSetView(nav.dataset.view);return;}
     const edit = e.target.closest('[data-kk-edit]');
