@@ -1,0 +1,1544 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#218478">
+<title>课间 · 教学工作台</title>
+<style>
+:root{
+  --paper:#f5f4f0; --surface:#ffffff; --surface-2:#fbfaf7;
+  --ink:#1d1c1a; --ink-2:#4a4843; --muted:#847f76;
+  --line:#e5e2da; --line-2:#efece5;
+  --accent:#2a6a5c; --accent-soft:#e7f0ed;
+  --warn:#b4552d; --warn-soft:#fbeee7;
+  --blue:#3b5f88; --blue-soft:#e9eef5;
+  --gold:#8a6a2f; --gold-soft:#f6efdf;
+  --r:10px;
+  --sh:0 1px 2px rgba(28,26,22,.04), 0 1px 8px rgba(28,26,22,.03);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,h4,p{margin:0}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:1180px;margin:0 auto;padding:18px 22px 60px}
+
+/* ---------- 顶栏 ---------- */
+.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.brand{display:flex;gap:10px;align-items:center}
+.brand .mark{
+  width:32px;height:32px;border-radius:9px;background:var(--ink);color:#fff;
+  display:grid;place-items:center;font-size:14px;font-weight:600;flex:none;
+}
+.brand b{display:block;font-size:15px;font-weight:650;letter-spacing:.2px}
+.brand span{display:block;font-size:10.5px;color:var(--muted);letter-spacing:.8px;margin-top:1px}
+.months{display:flex;gap:4px;flex-wrap:wrap}
+.mchip{
+  padding:4px 11px;border-radius:16px;font-size:12px;font-weight:550;
+  background:var(--surface);border:1px solid var(--line);color:var(--ink-2);transition:.15s;
+}
+.mchip:hover{border-color:#d6d2c8;color:var(--ink)}
+.mchip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:550;
+  padding:4px 9px;border-radius:20px;background:var(--gold-soft);color:var(--gold);border:1px solid rgba(138,106,47,.15);
+}
+.pill.live{background:var(--accent-soft);color:var(--accent);border-color:rgba(42,106,92,.16)}
+.pill i{width:5px;height:5px;border-radius:50%;background:currentColor;display:block}
+.pill.busy{background:var(--blue-soft);color:var(--blue);border-color:rgba(59,95,136,.16)}
+.pill.busy i{animation:wbPulse 1.05s ease-in-out infinite}
+.pill.warn{background:var(--warn-soft);color:var(--warn);border-color:rgba(180,85,45,.16)}
+@keyframes wbPulse{0%,100%{opacity:.25;transform:scale(.75)}50%{opacity:1;transform:scale(1.4)}}
+.pill[title]{cursor:help}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:7px;font-size:12.5px;
+  background:var(--surface);border:1px solid var(--line);color:var(--ink-2);transition:.15s;font-weight:550;
+}
+.btn:hover{border-color:#d6d2c8;background:#fff;color:var(--ink)}
+.btn svg{width:14px;height:14px}
+.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.primary:hover{background:#000;color:#fff}
+.btn.sm{padding:4px 8px;font-size:11.5px}
+
+/* ---------- 通用 ---------- */
+.sub{font-size:12.5px;color:var(--muted);margin:2px 0 14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:14px}
+.card-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line-2);flex-wrap:wrap}
+.card-h h3{font-size:13.5px;font-weight:650;letter-spacing:.2px}
+.card-h .hint{font-size:11.5px;color:var(--muted);font-weight:400}
+.card-h .right{margin-left:auto;display:flex;gap:6px;align-items:center}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.metric{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:13px 15px;box-shadow:var(--sh)}
+.metric .k{font-size:11.5px;color:var(--muted);letter-spacing:.4px}
+.metric .v{font-size:23px;font-weight:600;letter-spacing:-.5px;margin-top:6px;line-height:1.1}
+.metric .v small{font-size:12px;font-weight:500;color:var(--muted);margin-left:3px}
+.metric .f{font-size:11.5px;color:var(--muted);margin-top:5px}
+.metric.hl{border-color:rgba(42,106,92,.25);background:linear-gradient(180deg,#fff,#f8fbfa)}
+.tag{
+  display:inline-flex;align-items:center;font-size:10.5px;font-weight:600;padding:2px 6px;border-radius:5px;
+  background:var(--line-2);color:var(--ink-2);letter-spacing:.3px;white-space:nowrap;
+}
+.tag.on-{background:var(--blue-soft);color:var(--blue)}
+.tag.off-{background:var(--gold-soft);color:var(--gold)}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.tag.ok{background:var(--accent-soft);color:var(--accent)}
+.muted{color:var(--muted)}
+.empty{padding:30px 16px;text-align:center;color:var(--muted);font-size:12.5px}
+
+/* ---------- 表格 ---------- */
+.tbl-wrap{overflow:auto}
+table.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{
+  text-align:left;padding:7px 10px;font-size:11px;font-weight:600;color:var(--muted);
+  border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface-2);
+  position:sticky;top:0;z-index:1;
+}
+.tbl td{padding:5px 10px;border-bottom:1px solid var(--line-2);vertical-align:middle;white-space:nowrap}
+.tbl td.wrap{white-space:normal;min-width:150px}
+.tbl tbody tr:hover td{background:var(--surface-2)}
+.tbl tr[data-edit]{cursor:pointer}
+.tbl input,.tbl select{
+  border:1px solid transparent;border-radius:5px;padding:3px 6px;font-size:12px;background:transparent;
+  min-width:0;width:100%;
+}
+.tbl select{width:auto}
+.tbl input:hover,.tbl select:hover{border-color:var(--line)}
+.tbl input:focus,.tbl select:focus{outline:none;border-color:var(--accent);background:#fff}
+.tbl .rmv{opacity:0;font-size:15px;color:var(--muted);padding:0 3px;line-height:1}
+.tbl tr:hover .rmv{opacity:1}
+.tbl tr.need td{background:#fffbf3}
+.tbl tr.need td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
+.tbl tr.sum td{border-top:1.5px solid var(--line);border-bottom:none;background:var(--surface-2);font-weight:600;color:var(--ink-2)}
+.ot-tag{font-size:11px;font-weight:600;padding:2px 7px;border-radius:5px}
+.ot-tag.wk{background:var(--blue-soft);color:var(--blue)}
+.ot-tag.hd{background:var(--warn-soft);color:var(--warn)}
+
+/* ---------- 添加条 / 待办 ---------- */
+.addbar{display:flex;gap:6px;flex-wrap:wrap;padding:11px 16px;border-top:1px solid var(--line-2)}
+.addbar input,.addbar select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:12px;background:#fff;min-width:0}
+.addbar input:focus,.addbar select:focus{outline:none;border-color:var(--accent)}
+.todo{display:flex;gap:10px;align-items:flex-start;padding:9px 14px;border-bottom:1px solid var(--line-2)}
+.todo:last-child{border-bottom:none}
+.todo .cb{width:16px;height:16px;border-radius:4px;border:1.5px solid #cfcbc0;flex:none;margin-top:2px;display:grid;place-items:center;background:#fff;transition:.15s}
+.todo .cb svg{width:11px;height:11px;color:#fff;opacity:0}
+.todo.done .cb{background:var(--accent);border-color:var(--accent)}
+.todo.done .cb svg{opacity:1}
+.todo .tx{min-width:0;flex:1}
+.todo .tx b{font-size:13px;font-weight:550;display:block;line-height:1.45}
+.todo.done .tx b{color:var(--muted);text-decoration:line-through}
+.todo .tx span{font-size:11px;color:var(--muted);display:flex;gap:10px;margin-top:2px;flex-wrap:wrap}
+.todo .del{opacity:0;font-size:15px;color:var(--muted);padding:0 3px;line-height:1}
+.todo:hover .del{opacity:1}
+.todo.overdue .tx b{color:var(--warn)}
+.todoadd{display:flex;gap:6px;padding:11px 14px;border-top:1px solid var(--line-2)}
+.todoadd input{border:1px solid var(--line);border-radius:6px;padding:5px 9px;font-size:12.5px;flex:1;min-width:0}
+.todoadd input:focus{outline:none;border-color:var(--accent)}
+
+/* ---------- 弹窗 ---------- */
+dialog{
+  border:none;border-radius:14px;padding:0;max-width:560px;width:calc(100% - 32px);
+  box-shadow:0 24px 64px rgba(20,18,15,.25);background:var(--surface);color:var(--ink);
+}
+dialog::backdrop{background:rgba(28,26,22,.32);backdrop-filter:blur(2px)}
+.dlg-h{display:flex;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line-2)}
+.dlg-h h3{font-size:14.5px;font-weight:650}
+.dlg-h button{margin-left:auto;font-size:19px;color:var(--muted);line-height:1}
+.dlg-b{padding:16px 18px;max-height:65vh;overflow:auto;font-size:12.5px}
+.dlg-b h4{font-size:12px;font-weight:650;letter-spacing:.4px;color:var(--ink-2);margin:0 0 7px}
+.dlg-b section+section{margin-top:16px;padding-top:15px;border-top:1px solid var(--line-2)}
+.svcline{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:12.5px;color:var(--ink-2);line-height:1.7}
+.svcline .sep{color:var(--line);margin:0 2px}
+.kv-inline{color:var(--muted);font-size:11.5px;margin-left:6px}
+.dot-live{width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block;flex:0 0 auto}
+.dot-live.off{background:var(--muted);opacity:.5}
+.dot-live.busy{background:var(--blue);animation:wbPulse 1.05s ease-in-out infinite}
+.kv{display:grid;grid-template-columns:88px 1fr;gap:5px 10px;font-size:12px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-variant-numeric:tabular-nums}
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:7px;margin:0;padding:0}
+.steps li{counter-increment:s;list-style:none;position:relative;padding-left:24px;color:var(--ink-2);line-height:1.55}
+.steps li::before{
+  content:counter(s);position:absolute;left:0;top:1px;width:16px;height:16px;border-radius:50%;
+  background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:700;display:grid;place-items:center;
+}
+textarea.imp{
+  width:100%;min-height:82px;border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:12px;
+  font-family:ui-monospace,Consolas,monospace;resize:vertical;background:var(--surface-2);
+}
+textarea.imp:focus{outline:none;border-color:var(--accent);background:#fff}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.drop{
+  border:1.5px dashed var(--line);border-radius:9px;padding:14px;text-align:center;color:var(--muted);
+  font-size:12px;background:var(--surface-2);
+}
+.drop b{color:var(--accent)}
+
+#edlg{max-width:500px}
+.fld{display:flex;flex-direction:column;gap:4px;margin-bottom:11px;font-size:11.5px;color:var(--ink-2)}
+.fld>span{font-weight:600;letter-spacing:.2px}
+.fld input,.fld select{border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:12.5px;background:var(--surface-2);color:var(--ink)}
+.fld input:focus,.fld select:focus{outline:none;border-color:var(--accent);background:#fff}
+.fld2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.chk{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--ink-2);line-height:1.5;margin:2px 0 13px;cursor:pointer}
+.chk input{margin-top:2px;accent-color:var(--accent)}
+.ed-foot{display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line-2);padding-top:13px}
+.ed-note{font-size:11px;color:var(--muted);line-height:1.6;margin:0 0 12px}
+.ed-note b{color:var(--ink-2)}
+
+#toast{
+  position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);z-index:99;
+  background:var(--ink);color:#fff;font-size:12.5px;padding:8px 15px;border-radius:20px;
+  opacity:0;pointer-events:none;transition:.22s;box-shadow:0 8px 24px rgba(0,0,0,.22);
+}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:900px){
+  .grid4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .top .actions{margin-left:0}
+}
+@media print{
+  body{background:#fff}
+  .top,.actions,.addbar,.todoadd,.mchip{display:none!important}
+  .card{box-shadow:none;border-color:#ccc}
+  .tbl th{background:#fff!important}
+}
+
+/* 课间 · 保留原有数据层的界面改版 */
+:root{--paper:#f5f7f7;--surface:#fff;--surface-2:#f8faf9;--ink:#263735;--ink-2:#526a60;--muted:#8b9a93;--line:#e7eeea;--line-2:#eff3f0;--accent:#218478;--accent-soft:#e8f3ed;--blue:#4f82bb;--blue-soft:#edf3fb;--gold:#b38a42;--gold-soft:#fbf4e7;--r:15px;--sh:0 4px 18px #233a2f06}
+[hidden]{display:none!important}body{font-size:14px}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #a0cfc4;outline-offset:3px}button:disabled{opacity:.55;cursor:wait}.kk-icon{width:19px;height:19px;flex-shrink:0;display:block}.kk-shell{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}.kk-sidebar{position:sticky;top:0;height:100vh;background:#fcfdfc;border-right:1px solid var(--line);padding:34px 20px 23px;display:flex;flex-direction:column;z-index:20}.kk-brand{display:flex;align-items:center;gap:11px;text-align:left;padding:0 10px 33px}.kk-mark{width:39px;height:39px;display:grid;place-items:center;background:var(--accent);color:white;border-radius:12px}.kk-mark .kk-icon{width:24px;height:24px}.kk-brand strong{font-size:23px;letter-spacing:2px;font-weight:650}.kk-brand small{display:block;font-size:7.5px;letter-spacing:1.1px;white-space:nowrap;color:#9daaa3;margin-top:1px}.kk-caption{font-size:10px;letter-spacing:1px;color:#9ca9a2}.kk-sidebar>.kk-caption{padding:0 16px;margin-bottom:14px}.kk-sidebar nav{display:grid;gap:7px}.kk-nav{display:flex;align-items:center;gap:13px;min-height:46px;border-radius:10px;text-align:left;padding:0 16px;color:#87948f;white-space:nowrap;font-size:13px}.kk-nav:hover{background:#f0f5f1;color:var(--accent)}.kk-nav.active{background:#e7f2ed;color:#247c69;font-weight:600}.kk-nav-line{height:1px;background:var(--line);margin:13px}.kk-sidebar-note{margin-top:auto;border:1px solid #e7eeea;border-radius:12px;padding:16px 14px;background:#f6faf7;color:#82968b;font-size:11px;line-height:1.8}.kk-sidebar-note .kk-icon{color:#74a38a;margin-bottom:9px}.kk-sidebar-note strong{display:block;color:#526e60;font-size:12px;font-weight:500;margin-bottom:4px}.kk-profile{display:flex;align-items:center;gap:10px;padding:23px 6px 0;margin-top:20px;border-top:1px solid var(--line)}.kk-avatar{width:35px;height:35px;border-radius:50%;background:#e5eee5;color:#598266;display:grid;place-items:center;font-size:12px}.kk-profile strong{font-size:12px;font-weight:500;display:block}.kk-profile small{font-size:10px;color:var(--muted);display:block;margin-top:3px}.kk-profile>.kk-icon{margin-left:auto;width:15px;color:#96a39d}.wrap.kk-main{max-width:1660px;width:100%;min-width:0;padding:0 36px 28px;margin:0 auto}.kk-topbar{min-height:80px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);gap:12px}.kk-crumb{display:flex;align-items:center;gap:12px;font-size:11px;color:#9ca7a2}.kk-crumb b{font-weight:400;color:#65776e}.kk-top-actions{display:flex;gap:16px;align-items:center}.pill{font-size:10px;border:0;border-radius:6px;padding:5px 9px}.kk-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:31px 0 25px}.kk-eyebrow{font-size:10px;letter-spacing:1.7px;color:var(--accent);margin-bottom:9px}.kk-heading h1{font-size:27px;font-weight:600;letter-spacing:.5px;line-height:1.4}.kk-heading h1>span{color:var(--accent);margin-left:5px}.kk-heading p{font-size:12px;color:#92a097;margin-top:10px}.kk-heading-actions{display:flex;gap:10px}.btn{min-height:36px;justify-content:center;padding:8px 14px;border-radius:9px;font-size:11px;font-weight:500}.btn .kk-icon{width:15px;height:15px}.btn.primary{background:var(--accent);border-color:var(--accent);box-shadow:0 3px 7px #21847812}.btn.primary:hover{background:#176a60;border-color:#176a60}.btn:hover{background:#f8fbf8;border-color:#c5d8cf;color:var(--accent)}.btn.sm{min-height:29px;font-size:10px;padding:5px 9px}.kk-period{display:flex;justify-content:space-between;align-items:center;margin-bottom:21px;gap:14px}.kk-period>div{display:flex;align-items:center;gap:15px;min-width:0}.months{gap:5px;max-height:85px;overflow:auto}.mchip{border-radius:6px;padding:4px 10px;font-size:11px;background:transparent;border-color:transparent;font-weight:400}.mchip.on{background:#e7f2ed;border-color:#e0ebe4;color:#247c69;font-weight:600}.kk-local{display:flex;gap:6px;align-items:center;white-space:nowrap;font-size:10px;color:#96a59c}.kk-local .kk-icon{width:12px;height:12px}.grid4{gap:17px;margin-bottom:23px}.metric{padding:19px 20px 17px;min-height:131px;position:relative}.metric.hl{border-color:var(--line);background:#fff}.metric .k{font-size:11px;letter-spacing:0}.metric .v{font-size:29px;line-height:1.3;margin-top:10px;font-weight:600}.metric .v small{font-size:11px;font-weight:400;margin-left:5px}.metric .f{font-size:10px;margin-top:10px;color:#9ca9a1}.kk-stat-icon{position:absolute;right:18px;top:17px;display:grid;place-items:center;width:31px;height:31px;border-radius:9px;background:#eff6f1;color:#6d9a82}.kk-stat-icon .kk-icon{width:16px;height:16px}.metric:nth-child(2) .kk-stat-icon{background:#eef3f8;color:#7e9cba}.metric:nth-child(3) .kk-stat-icon{background:#f9f5e9;color:#ba9c64}.metric:nth-child(4) .kk-stat-icon{background:#f4f0f7;color:#a28aab}.card{margin-bottom:23px;overflow:hidden}.kk-dashboard{display:grid;grid-template-columns:minmax(0,1fr) 276px;gap:21px}.kk-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:21px 22px 18px}.kk-panel-head h2{font-size:14px;font-weight:600}.kk-panel-head p{font-size:10px;color:#9ba69f;margin-top:5px}.kk-panel-head>.kk-icon{color:#c5ad76;width:22px;height:22px}.kk-week-nav{display:flex;gap:6px;align-items:center;white-space:nowrap}.kk-week-nav button{font-size:11px;color:#70867b;padding:4px 5px;border-radius:5px}.kk-week-nav button:first-child,.kk-week-nav button:last-child{font-size:20px;line-height:1}.kk-week-nav button:hover{background:var(--accent-soft)}.kk-week-scroll{overflow-x:auto;padding:0 13px}.kk-week-grid{display:grid;grid-template-columns:repeat(7,minmax(76px,1fr));min-width:532px}.kk-day{padding:0 5px 14px;border-right:1px solid var(--line-2);min-height:277px}.kk-day:last-child{border-right:0}.kk-day-head{text-align:center;border-bottom:1px solid var(--line);padding:2px 0 13px;margin-bottom:12px;color:#a0aca5;font-size:10px;line-height:1.6}.kk-day-head strong{display:block;font-size:19px;line-height:1.4;font-weight:500;color:#65796e}.kk-day.is-today .kk-day-head strong{background:var(--accent);color:#fff;border-radius:8px;width:30px;margin:0 auto}.kk-day.is-today .kk-day-head{color:var(--accent)}.kk-event{display:block;width:100%;text-align:left;border-radius:6px;padding:8px 7px;margin-bottom:8px;background:#eaf4ef;color:#4b8671;border-left:2px solid #6fa68c;line-height:1.6;overflow-wrap:anywhere}.kk-event.online{background:#edf3fb;color:#6587ad;border-left-color:#8aadd2}.kk-event.other{background:#fbf4e7;color:#ae905a;border-left-color:#d2b87c}.kk-event:hover{filter:brightness(.97)}.kk-event strong{display:block;font-size:10px;font-weight:500}.kk-event small{font-size:9px;display:block;opacity:.8}.kk-day-blank{color:#cad4cd;text-align:center;font-size:11px;padding:60px 0}.kk-panel-foot{border-top:1px solid var(--line-2);padding:13px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px}.kk-legend{display:flex;gap:12px;flex-wrap:wrap;color:#9ba69f;font-size:9px}.kk-legend span{display:flex;align-items:center;gap:5px}.kk-legend i{width:5px;height:5px;background:#7eaa93;border-radius:50%}.kk-legend i.online{background:#8eadd0}.kk-legend i.other{background:#d2b87c}.kk-link{display:inline-flex;gap:6px;align-items:center;color:#6a8c7c;font-size:10px;white-space:nowrap;padding:0}.kk-link .kk-icon{width:13px;height:13px}.kk-today{display:flex;flex-direction:column}.kk-today #kk-today{padding:0 21px 10px;max-height:340px;overflow:auto}.kk-timeline{display:block;border-left:1px solid #e2eae4;margin-left:4px;padding:0 0 23px 18px;position:relative;width:calc(100% - 4px);text-align:left}.kk-timeline:before{content:"";position:absolute;left:-4px;top:5px;width:7px;height:7px;background:#8caf9c;border:2px solid white;box-shadow:0 0 0 1px #8caf9c;border-radius:50%}.kk-timeline time{font-size:10px;color:#97a59c;display:block;margin-bottom:5px}.kk-timeline strong{display:block;font-size:12px;font-weight:500;color:#526c5f;overflow-wrap:anywhere}.kk-timeline small{display:block;font-size:10px;color:#9aa69f;margin-top:4px;overflow-wrap:anywhere}.kk-timeline:hover strong{color:var(--accent)}.kk-today-foot{padding:17px;border-top:1px solid var(--line-2);font-size:10px;color:#a1afa5;text-align:center;margin-top:auto}.kk-empty{padding:45px 18px;text-align:center;color:#9aa99f;font-size:11px;line-height:2}.kk-empty .kk-icon{width:30px;height:30px;margin:0 auto 13px;color:#a9c3b4}.kk-empty strong{display:block;font-size:12px;font-weight:500;color:#718c7c}.kk-count{display:inline-block;font-size:10px;font-weight:400;color:#aa986b;background:#f7f2e8;padding:1px 6px;border-radius:5px;margin-left:5px}.kk-preview .tbl td{padding:13px 22px}.kk-preview .tbl th{padding:10px 22px;font-size:10px}.kk-preview .tbl{font-size:11px}.kk-status{font-size:10px;color:#aa986b;background:#fbf4e7;padding:4px 8px;border-radius:5px}.card-h{padding:19px 22px;gap:8px}.card-h .hint{font-size:11px}.card-h h3{font-size:14px}.tbl th{padding:12px 18px;font-size:11px}.tbl td{padding:11px 18px;font-size:12px}.tbl td.wrap{max-width:380px}.tbl td.wrap{margin:0}.tbl input,.tbl select{padding:6px 8px;border:1px solid var(--line);background:#fff;font-size:11px}.addbar{padding:17px 22px;gap:9px}.addbar input,.addbar select{padding:8px 10px;border-radius:8px}.todo{padding:16px 22px}.todoadd{padding:17px 22px;flex-wrap:wrap}.todoadd input{padding:8px 10px}.todo .del,.tbl .rmv{opacity:.5}.todo:hover .del,.tbl tr:hover .rmv{opacity:1}.kk-agenda-row{display:flex;gap:20px;padding:20px 24px;border-top:1px solid var(--line-2);align-items:center;cursor:pointer}.kk-agenda-row:hover{background:var(--surface-2)}.kk-agenda-date{font-size:11px;color:var(--muted);min-width:86px}.kk-agenda-row strong{font-size:13px;font-weight:500}.kk-agenda-row p{font-size:11px;color:var(--muted);margin-top:5px}.kk-footer{display:flex;justify-content:space-between;margin-top:10px;color:#a6b0aa;font-size:10px;padding-top:5px}.kk-menu{display:none}.kk-scrim{display:none}dialog{border-radius:16px}dialog .dlg-h{padding:20px 22px}dialog .dlg-b{padding:20px 22px}dialog .btn.primary{color:#fff}.kk-view-enter{animation:kkEnter .18s ease-out}@keyframes kkEnter{from{opacity:.5;transform:translateY(3px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){.kk-view-enter{animation:none}}
+@media(min-width:1600px){.kk-day{min-height:330px}.kk-event{padding:11px 9px}.kk-event strong{font-size:11px}.kk-event small{font-size:10px}}
+@media(max-width:1200px){.kk-shell{grid-template-columns:192px minmax(0,1fr)}.kk-sidebar{padding-left:14px;padding-right:14px}.wrap.kk-main{padding:0 25px 25px}.kk-dashboard{grid-template-columns:minmax(0,1fr) 240px;gap:17px}.kk-local{display:none}.kk-heading h1{font-size:24px}.metric{padding:17px 15px}.metric .f{font-size:9px}.kk-stat-icon{right:13px;top:13px;width:26px;height:26px}.kk-panel-head{padding:19px 17px}.kk-legend{gap:8px}.kk-panel-foot{padding:12px 15px}}
+@media(max-width:1050px){.kk-dashboard{grid-template-columns:minmax(0,1fr)}.kk-today #kk-today{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-height:none}.kk-today .kk-empty{grid-column:1/-1;padding:22px}.kk-today .kk-empty .kk-icon{display:none}.kk-day{min-height:245px}.kk-top-actions{gap:7px}.grid4{gap:12px}.metric .v{font-size:25px}.kk-stat-icon{display:none}}
+@media(max-width:760px){.kk-shell{display:block}.kk-sidebar{position:fixed;left:0;top:0;width:220px;transform:translateX(-100%);transition:transform .2s;z-index:40}.kk-sidebar.open{transform:translateX(0)}.kk-scrim:not([hidden]){display:block;position:fixed;inset:0;background:#233a2f40;z-index:35}.wrap.kk-main{padding:0 18px 24px}.kk-menu{display:block;padding:0;color:var(--muted)}.kk-topbar{min-height:66px}.kk-top-actions .btn{font-size:0;padding:6px}.kk-top-actions .btn .kk-icon{width:16px;height:16px}.pill{font-size:9px}.kk-crumb{gap:8px}.kk-heading{padding:25px 0 22px;align-items:flex-start;flex-direction:column;gap:18px}.kk-heading h1{font-size:25px}.kk-heading p{font-size:11px}.kk-heading-actions{align-self:flex-end}.kk-period>div{align-items:flex-start;gap:8px;flex-direction:column}.kk-period{margin-bottom:17px}.months{max-height:72px}.grid4{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:18px}.metric{min-height:118px;padding:16px}.metric .v{font-size:26px}.metric .f{font-size:10px}.kk-stat-icon{display:grid}.kk-dashboard{gap:0}.card{margin-bottom:18px}.kk-today #kk-today{grid-template-columns:1fr}.kk-panel-foot{align-items:flex-start}.kk-legend{gap:8px}.kk-panel-head{padding:18px}.kk-panel-head h2{font-size:13px}.kk-footer{font-size:9px}.card-h{padding:16px}.tbl td,.tbl th{padding:10px 13px}.kk-agenda-row{padding:17px;gap:12px}.kk-agenda-date{min-width:75px}.kk-preview .tbl td,.kk-preview .tbl th{padding:12px 16px}.kk-profile{margin-top:15px}.kk-heading-actions .btn{padding:8px 13px}.kk-sidebar-note{margin-top:auto}.kk-brand{padding-bottom:20px}.kk-sidebar{padding-top:25px}}
+@media(max-height:750px) and (min-width:761px){.kk-sidebar-note{display:none}.kk-profile{margin-top:auto}}
+@media print{.kk-sidebar,.kk-topbar,.kk-heading-actions,.kk-period,.kk-week-nav,.kk-link,.kk-footer{display:none!important}.kk-shell{display:block}.wrap.kk-main{padding:0;max-width:none}.kk-heading{padding:0 0 20px}.card{break-inside:avoid}.tbl-wrap{overflow:visible}}
+
+
+/* 课程表、报销路线与调休申请 */
+.kk-course-toolbar{display:flex;justify-content:space-between;align-items:center;padding:15px 22px;border-bottom:1px solid var(--line-2);gap:15px}.kk-course-toolbar>strong{font-size:12px;color:var(--ink-2);font-weight:500}.kk-course-scroll{overflow:auto}.kk-course-calendar{min-width:800px}.kk-ct-head,.kk-ct-body{display:grid;grid-template-columns:52px repeat(7,minmax(0,1fr))}.kk-ct-head{border-bottom:1px solid var(--line);background:#fcfdfc}.kk-ct-head>div{text-align:center;font-size:10px;color:var(--muted);padding:12px 3px;border-right:1px solid var(--line-2)}.kk-ct-head strong{display:block;font-size:16px;color:#688074;font-weight:500;margin-top:3px}.kk-ct-head .today{background:#eaf4ee;color:var(--accent)}.kk-ct-head .today strong{color:var(--accent)}.kk-ct-axis{position:relative}.kk-ct-axis time{position:absolute;right:8px;font-size:9px;color:#a2aea6;padding-top:4px}.kk-ct-day{position:relative;border-left:1px solid var(--line-2);background:repeating-linear-gradient(to bottom,transparent 0,transparent 47px,#edf2ee 47px,#edf2ee 48px)}.kk-ct-event{position:absolute;display:block;text-align:left;padding:6px 7px;border-radius:6px;border-left:2px solid #7aa48b;background:#eaf4ef;color:#55816c;line-height:1.6;overflow:auto}.kk-ct-event.online{background:#edf3fb;color:#6485aa;border-left-color:#8eadd0}.kk-ct-event:hover{filter:brightness(.97)}.kk-ct-event strong{display:block;font-size:11px;font-weight:500;overflow-wrap:anywhere}.kk-ct-event small{display:block;font-size:9px;opacity:.9}.kk-course-foot{padding:15px 22px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}.kk-filter-bar{display:flex;align-items:center;gap:16px;padding:14px 22px;border-bottom:1px solid var(--line-2);flex-wrap:wrap;color:var(--muted);font-size:11px}.kk-filter-bar label{display:flex;align-items:center;gap:10px;white-space:nowrap}.kk-filter-bar select{font-size:11px;padding:6px 10px;border:1px solid var(--line);border-radius:7px;background:white}.kk-filter-bar>span{font-size:10px}.tbl .kk-route{min-width:195px;width:210px}.kk-check{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;font-size:11px;cursor:pointer;color:#8c977f}.tbl .kk-check input{appearance:auto;width:15px;height:15px;margin:0;padding:0;accent-color:var(--accent);cursor:pointer}.kk-marked td{background:#f6faf7;color:#7a9183}.kk-marked .kk-check{color:var(--accent)}.kk-agenda-table tr[data-kk-edit]{cursor:pointer}.kk-agenda-table td.wrap{min-width:180px;max-width:390px}.kk-agenda-table td:last-child{font-size:11px}.kk-ct-head>div:first-child{padding-top:24px;font-size:10px}.kk-course-toolbar .kk-week-nav{gap:13px}
+@media(max-width:760px){.kk-filter-bar{padding:12px 16px;gap:9px}.kk-course-toolbar{padding:13px 16px}.kk-course-calendar{min-width:850px}.kk-course-foot{padding:13px 16px}.metric .f{font-size:9px;line-height:1.8}.kk-ct-event{padding:5px}.kk-ct-event strong{font-size:10px}}
+
+
+.kk-main[data-current-view]:not([data-current-view="overview"]) #metrics{display:none}
+
+.kk-ct-event.other{background:#fbf4e7;color:#ae905a;border-left-color:#d2b87c}
+.kk-overview-calendar{min-width:740px}.kk-overview-calendar .kk-ct-event strong{font-size:10px}
+.kk-bottom-stats{margin-top:27px}.kk-bottom-stats>h2{font-size:14px;font-weight:600;margin-bottom:15px}
+.kk-bottom-stats .grid4{margin-bottom:6px}.tbl td.kk-ot-title{min-width:200px;max-width:360px;white-space:normal}
+
+
+/* Shared folded time axis: the same rows remain aligned across all seven days. */
+.kk-ct-body{position:relative}.kk-ct-day{background:none}.kk-time-line{position:absolute;left:0;right:0;border-top:1px solid #edf2ee;pointer-events:none}
+.kk-time-fold{position:absolute;left:52px;right:0;height:20px;background:#f4f7f5;border-top:1px dashed #dce6df;border-bottom:1px dashed #dce6df;color:#91a297;font-size:9px;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2;letter-spacing:.3px}
+.kk-axis-fold{position:absolute;right:15px;height:20px;font-size:12px;color:#a7b7ac;line-height:20px}.kk-fold-note{padding:9px 15px;font-size:10px;color:#9aa99f;border-top:1px solid var(--line-2)}
+
+
+.kk-ct-event{scrollbar-width:none}.kk-ct-event::-webkit-scrollbar{display:none}
+
+.kk-route-manager{padding:15px 22px;border-bottom:1px solid var(--line-2);background:#fbfdfb;display:grid;gap:10px}.kk-route-manager>div:first-child{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.kk-route-manager strong{font-size:12px;font-weight:500}.kk-route-manager>div:first-child>span{font-size:10px;color:var(--muted)}.kk-route-add{display:flex;align-items:center;gap:9px}.kk-route-add input{font-size:12px;padding:8px 11px;min-width:0;flex:1;max-width:380px;border:1px solid var(--line);border-radius:8px;background:white}.kk-route-add .btn{font-size:11px}#kk-custom-routes{display:flex;gap:7px;flex-wrap:wrap;font-size:10px}#kk-custom-routes .tag{font-weight:400;background:var(--accent-soft);color:var(--accent)}
+@media(max-width:760px){.kk-route-manager{padding:14px 16px}}
+
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-db" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><ellipse cx="12" cy="6" rx="8" ry="3.2"/><path d="M4 6v12c0 1.8 3.6 3.2 8 3.2s8-1.4 8-3.2V6M4 12c0 1.8 3.6 3.2 8 3.2s8-1.4 8-3.2"/></symbol>
+  <symbol id="i-dl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 3.5v11m0 0l-4-4m4 4l4-4M4.5 20.5h15"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+</svg>
+
+<div class="kk-shell">
+<aside class="kk-sidebar" id="kk-sidebar">
+  <button class="kk-brand" data-view="overview"><span class="kk-mark"><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/></svg></span><span><strong>课间</strong><small>TEACHING WORKSPACE</small></span></button>
+  <div class="kk-caption">我的工作空间</div><nav aria-label="主要导航"><button class="kk-nav active" data-view="overview" aria-current="page"><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>工作台</span></button><button class="kk-nav " data-view="courses" aria-current="false"><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></svg><span>我的课表</span></button><button class="kk-nav " data-view="agenda" aria-current="false"><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="5" r="2"/><circle cx="18" cy="19" r="2"/><path d="M8 5h7a4 4 0 0 1 0 8H9a3 3 0 0 0 0 6h7"/></svg><span>行程安排</span></button><button class="kk-nav " data-view="expenses" aria-current="false"><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 8V5a2 2 0 0 0-2-2H6a3 3 0 0 0 0 6h14v12H6a3 3 0 0 1-3-3V6m17 7h-5v4h5"/></svg><span>报销管理</span></button><button class="kk-nav " data-view="overtime" aria-current="false"><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>加班统计</span></button><button class="kk-nav " data-view="todos" aria-current="false"><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 6 1.5 1.5L7 4M10 6h11M3 12h4m3 0h11M3 18h4m3 0h11"/></svg><span>我的待办</span></button><div class="kk-nav-line"></div><button class="kk-nav" id="kk-settings"><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 3v18M12 3v18M20 3v18"/><rect x="1" y="7" width="6" height="4" rx="1"/><rect x="9" y="14" width="6" height="4" rx="1"/><rect x="17" y="6" width="6" height="4" rx="1"/></svg><span>日历与设置</span></button></nav>
+  <div class="kk-sidebar-note"><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.3 6.7L21 12l-6.7 2.3L12 21l-2.3-6.7L3 12l6.7-2.3L12 3Z"/></svg><strong>让安排井井有条</strong><p>课程、行程和报销，<br>都从日历开始。</p></div>
+  <div class="kk-profile"><span class="kk-avatar">我</span><div><strong>我的教学空间</strong><small>Asia / Shanghai</small></div><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></svg></div>
+</aside><button class="kk-scrim" id="kk-scrim" aria-label="关闭导航" hidden></button>
+<main class="wrap kk-main">
+  <header class="kk-topbar"><div class="kk-crumb"><button class="kk-menu" id="kk-menu" aria-label="打开导航"><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><span>我的空间</span><span>/</span><b id="kk-crumb">工作台</b></div><div class="kk-top-actions"><span class="pill" id="sync-pill"><i></i><span id="sync-text">正在读取日历…</span></span><button class="btn sm" id="btn-data"><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 3v18M12 3v18M20 3v18"/><rect x="1" y="7" width="6" height="4" rx="1"/><rect x="9" y="14" width="6" height="4" rx="1"/><rect x="17" y="6" width="6" height="4" rx="1"/></svg>日历与数据</button></div></header>
+  <section class="kk-heading"><div><div class="kk-eyebrow" id="kk-date"></div><h1 id="kk-title">把时间，留给教学。<span>·</span></h1><p id="kk-subtitle">看清每一节课，安排每一段路，也不漏掉每一笔报销。</p></div><div class="kk-heading-actions"><button class="btn" id="kk-sync"><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7V3l-4 4m4 0A9 9 0 0 0 4 8m0 9v4l4-4m-4 0a9 9 0 0 0 16-1"/></svg>导入 / 备份</button><button class="btn primary" id="btn-add"><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>新建安排</button></div></section>
+  <div class="kk-period"><div><span class="kk-caption">统计月份</span><div class="months" id="month-bar"></div></div><span class="kk-local"><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></svg>浏览器保存 · 自动保留手动修正</span></div>
+  <section id="kk-overview" data-page="overview">
+    <div class="kk-dashboard"><section class="card kk-calendar"><div class="kk-panel-head"><div><h2>一周课表</h2><p id="kk-week-label"></p></div><div class="kk-week-nav"><button data-week="-1" aria-label="上一周">‹</button><button data-week="today">本周</button><button data-week="1" aria-label="下一周">›</button></div></div><div class="kk-course-scroll"><div id="kk-week" class="kk-course-calendar kk-overview-calendar"></div></div><div class="kk-panel-foot"><div class="kk-legend"><span><i></i>线下课程</span><span><i class="online"></i>线上课程</span><span><i class="other"></i>行程 / 其他</span></div><button class="kk-link" data-view="courses">全部课程 <svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></button></div></section>
+    <section class="card kk-today"><div class="kk-panel-head"><div><h2>今日安排</h2><p id="kk-today-label"></p></div><svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg></div><div id="kk-today"></div><div class="kk-today-foot">留一点空白，给自己充充电。</div></section></div>
+    <section class="card kk-preview"><div class="kk-panel-head"><div><h2>待报销 <span class="kk-count" id="kk-pending-count">0</span></h2><p>按月整理路途费与差旅支出</p></div><button class="kk-link" data-view="expenses">全部报销 <svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></button></div><div class="tbl-wrap" id="kk-expenses-preview"></div></section>
+    <section class="kk-bottom-stats" aria-label="工作台统计"><h2>工作台统计</h2><div class="grid4" id="metrics"></div></section>
+  </section>
+  <section class="card" id="kk-agenda" data-page="agenda" hidden><div class="kk-panel-head"><div><h2>行程安排</h2><p id="kk-agenda-week-label"></p></div><div class="kk-week-nav"><button data-agenda-week="-1" aria-label="行程上一周">‹</button><button data-agenda-week="today">本周</button><button data-agenda-week="1" aria-label="行程下一周">›</button></div></div><div class="kk-course-scroll"><div id="kk-agenda-list" class="kk-course-calendar"></div></div><div class="kk-course-foot" id="kk-agenda-summary"></div></section>
+  <!-- 上课信息 -->
+  <section class="card" id="c-card" data-page="courses" hidden>
+    <div class="card-h">
+      <h3>上课信息</h3><span class="hint" id="c-hint"></span>
+      <div class="right"><button class="btn sm" id="kk-export-course">导出本月课表</button></div>
+    </div>
+    <div class="kk-course-toolbar"><strong id="kk-course-week-label"></strong><div class="kk-week-nav"><button data-course-week="-1" aria-label="课表上一周">‹</button><button data-course-week="today">本周</button><button data-course-week="1" aria-label="课表下一周">›</button></div></div>
+    <div class="kk-course-scroll"><div id="kk-course-calendar" class="kk-course-calendar"></div></div><div class="kk-course-foot" id="kk-course-week-total"></div><table id="c-table" hidden></table>
+  </section>
+
+  <!-- 待报销行程 -->
+  <section class="card" id="m-card" data-page="expenses" hidden>
+    <div class="card-h">
+      <h3>待报销行程</h3><span class="hint" id="m-hint"></span><div class="right"><button class="btn sm" id="kk-export-money">导出本月报销</button></div>
+    </div>
+    <div class="kk-filter-bar"><label>显示 <select id="kk-money-filter"><option value="all">全部记录</option><option value="unpaid">未报销</option><option value="paid">已报销</option></select></label><span>勾选“已报销”后可随时取消；往返路线支持选择或自行填写。</span></div>
+    <div class="kk-route-manager"><div><strong>我的常用路线</strong><span>线下课路途费和手动新增报销默认 150 元，可逐笔修改。</span></div><div class="kk-route-add"><input id="kk-route-name" maxlength="200" placeholder="如：家 → 学校 → 公司" aria-label="自定义常用路线"><button class="btn" id="kk-route-add">添加常用路线</button></div><div id="kk-custom-routes"></div></div>
+    <datalist id="kk-route-options"><option value="家 → 高复 → 家"></option><option value="公司 → 高复 → 家"></option><option value="家 → 教育园 → 家"></option><option value="公司 → 教育园 → 家"></option></datalist>
+    <div class="tbl-wrap"><table class="tbl" id="m-table"></table></div>
+    <div class="addbar">
+      <input type="date" id="a-date" style="width:130px">
+      <input id="a-title" placeholder="事项，如 蚌埠→合肥 高铁" style="flex:1;min-width:140px">
+      <select id="a-cat">
+        <option>路途费</option><option>交通</option><option>市内交通</option><option>住宿</option><option>餐饮</option>
+        <option>会议</option><option>办公</option><option>车辆</option><option>其他</option>
+      </select>
+      <input id="a-route" list="kk-route-options" placeholder="往返路线（可选）" style="width:190px" aria-label="新增报销往返路线">
+      <input id="a-amt" value="150" placeholder="默认 150 元" inputmode="decimal" style="width:76px;text-align:right">
+      <button class="btn primary" id="a-add">添加</button>
+    </div>
+  </section>
+
+  <!-- 加班统计 -->
+  <section class="card" id="o-card" data-page="overtime" hidden>
+    <div class="card-h">
+      <h3>加班统计</h3><span class="hint">周末和法定节假日的课算加班</span><div class="right"><button class="btn sm" id="kk-export-ot">导出本月加班</button></div>
+    </div>
+    <div class="card-h" style="border-bottom:1px solid var(--line-2);background:var(--surface-2)">
+      <span class="hint" id="o-sum" style="font-weight:600;color:var(--ink-2)"></span>
+    </div>
+    <div class="kk-filter-bar"><label>显示 <select id="kk-ot-filter"><option value="all">全部加班</option><option value="pending">未申请调休</option><option value="applied">已申请调休</option></select></label><span>勾选表示该次加班已经申请调休，未勾选表示尚未申请。</span></div><div class="tbl-wrap"><table class="tbl" id="o-table"></table></div>
+  </section>
+
+  <!-- 待办 -->
+  <section class="card" id="t-card" data-page="todos" hidden>
+    <div class="card-h">
+      <h3>待办</h3><span class="hint" id="td-hint"></span>
+      <div class="right"><button class="btn sm" id="td-hide">隐藏已完成</button></div>
+    </div>
+    <div id="td-list"></div>
+    <div class="todoadd">
+      <input id="td-title" placeholder="加一条待办…">
+      <input type="date" id="td-due" style="width:130px">
+      <button class="btn primary" id="td-add">加</button>
+    </div>
+  </section>
+<footer class="kk-footer"><span>课间 · 在线教学工作台</span><span>北京时间 UTC+8</span></footer>
+</main></div>
+
+<!-- 日历导入与备份 -->
+<dialog id="dlg">
+  <div class="dlg-h"><h3>日历导入与备份</h3><button id="dlg-x">×</button></div>
+  <div class="dlg-b">
+    <section>
+      <h4>在线版如何保存</h4>
+      <div id="svc-box"><div class="svcline muted">检查同步服务…</div></div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="svc-auto" hidden>本机设置</button>
+        <span class="muted" style="font-size:11px">网页版无需安装，数据留在当前浏览器；换设备可导入备份。</span>
+      </div>
+    </section>
+    <section>
+      <h4>数据保存</h4>
+      <dl class="kv" id="dlg-kv"></dl>
+      <p class="muted" style="font-size:11.5px;line-height:1.7;margin-top:8px">修改自动保存在当前浏览器。请定期导出完整备份，清理浏览器数据会移除本机记录。CSV 可从各页面下载；备份不包含飞书密码。</p>
+    </section>
+    <section><h4>迁移原工作台</h4><p class="muted">运行工程中的 <b>准备工作台迁移.cmd</b>，会在 private-export 文件夹生成个人迁移文件；也可直接导入原工作台导出的 JSON / ICS。文件只在你选择后由本浏览器读取。</p></section>
+    <section>
+      <h4>我的修正</h4>
+      <p class="muted" style="font-size:11.5px;line-height:1.7" id="dlg-fix">—</p>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="fix-clear">清空本浏览器手动修正</button>
+        <button class="btn" id="money-clear">恢复报销改动</button>
+      </div>
+      <p class="muted" style="margin-top:8px;font-size:11px;line-height:1.6">修正只存本机，重新同步飞书日历不会覆盖；点上课信息里的行就能改标题、归类、时间或隐藏。</p>
+    </section>
+    <section>
+      <h4>备份 / 导入</h4>
+      <div class="drop" id="drop">
+        把 <b>.ics</b> 或 <b>.json</b> 拖到这里，或 <label style="color:var(--accent);cursor:pointer;text-decoration:underline">选择文件<input type="file" id="file" accept=".ics,.json,.txt" hidden></label>
+      </div>
+      <textarea class="imp" id="imp" placeholder="也可以直接粘贴 ICS 文本，或备份 JSON" style="margin-top:8px"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button class="btn primary" id="imp-go">解析并导入</button>
+        <button class="btn" id="exp-json"><svg><use href="#i-dl"/></svg>导出备份 JSON</button>
+        <button class="btn" id="reset" style="color:var(--warn)">清空本浏览器数据</button>
+      </div>
+    </section>
+  </div>
+</dialog>
+
+<!-- 单条安排编辑 -->
+<dialog id="edlg">
+  <div class="dlg-h"><h3 id="ed-title">修改安排</h3><button id="ed-x">×</button></div>
+  <div class="dlg-b">
+    <label class="fld"><span>标题</span><input id="ed-name" placeholder="例如：线下物理课"></label>
+    <label class="fld"><span>归类</span><select id="ed-course"></select></label>
+    <div class="fld2">
+      <label class="fld"><span>日期</span><input type="date" id="ed-date"></label>
+      <div class="fld2" style="gap:7px">
+        <label class="fld"><span>开始</span><input type="time" id="ed-t1"></label>
+        <label class="fld"><span>结束</span><input type="time" id="ed-t2"></label>
+      </div>
+    </div>
+    <label class="chk"><input type="checkbox" id="ed-hide"><span>这条已取消 / 不要显示<br><b style="font-weight:500;color:var(--muted)">飞书里忘了删的旧课，勾这里就永久隐藏，重新同步也不会回来</b></span></label>
+    <p class="ed-note" id="ed-note"></p>
+    <div class="ed-foot">
+      <button class="btn primary" id="ed-save">保存这一次</button>
+      <button class="btn" id="ed-series">改整个系列</button>
+      <button class="btn" id="ed-reset" style="color:var(--warn)">恢复原始</button>
+      <button class="btn" id="ed-del" style="color:var(--warn);display:none">删除</button>
+    </div>
+  </div>
+</dialog>
+
+<div id="toast"></div>
+
+<script id="wb-data" type="application/json">
+{"meta": {"source": "empty"}, "settings": {"termStart": "2026-09-01"}, "todos": [], "events": []}
+</script>
+
+<script>
+window.__wbInit = function (CAL) {
+"use strict";
+
+/* ========== 基础工具 ========== */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const pad2 = n => String(n).padStart(2, "0");
+const WD = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
+const DAY = 864e5;
+
+const RAW = JSON.parse($("#wb-data").textContent || "{}");
+const KEY = "kejian.online.v1";
+const CAL_EPOCH = "kejian.online.calEpoch1";
+
+// 兼容导入的日历结构
+if (CAL && Array.isArray(CAL.events) && CAL.events.length) {
+  RAW.events = CAL.events;
+  RAW.meta = { source: "caldav", syncedAt: (CAL.meta && CAL.meta.syncedAt) || "" };
+  RAW.todos = Array.isArray(CAL.todos) ? CAL.todos : [];
+}
+
+const key = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+const d0  = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const sow = d => { const x = d0(d); const w = (x.getDay() + 6) % 7; return addDays(x, -w); };
+const hm = d => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+const money = n => "¥" + (Math.round((Number(n) || 0) * 100) / 100).toLocaleString("zh-CN", { maximumFractionDigits: 2 });
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+/* ========== 状态存取 ========== */
+const blank = () => ({ settings: null, events: null, todos: null, fix: {}, added: [], extra: [], money: {}, overtime: {}, routes: [], savedAt: null });
+let S = blank();
+try {
+  const raw = localStorage.getItem(KEY);
+  if (raw) S = Object.assign(blank(), JSON.parse(raw));
+} catch (e) { /* 忽略损坏的本地数据 */ }
+S.fix = S.fix || {}; S.added = S.added || []; S.extra = S.extra || []; S.money = S.money || {}; S.overtime = S.overtime || {}; S.routes = Array.isArray(S.routes) ? S.routes : [];
+// 首次使用同步数据：清掉示例数据时代的本地待办/覆盖
+if (CAL) {
+  if (!localStorage.getItem(CAL_EPOCH)) {
+    S.todos = null;
+    try { localStorage.setItem(CAL_EPOCH, "1"); } catch (e) {}
+  }
+} else {
+  try { localStorage.removeItem(CAL_EPOCH); } catch (e) {}
+}
+
+const save = () => {
+  S.savedAt = new Date().toISOString();   // 本机与文件共用同一个时间戳，谁新用谁
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+  pushFiles();   // 同步服务在线时，把 JSON + 月度 CSV 落到本机文件
+};
+
+const settings = () => (S.settings || RAW.settings || {});
+const termStart = () => new Date((settings().termStart || "2026-09-01") + "T00:00:00");
+const rawEvents = () => {
+  const base = Array.isArray(S.events) && S.events.length ? S.events : (RAW.events || []);
+  // 手动补的课（飞书里漏加的）一起参与
+  const own = (S.added || []).map(e => ({
+    id: e.id, uid: e.uid || e.id, title: e.title, start: e.start, end: e.end,
+    allDay: false, location: e.location || "", description: e.note || "",
+    calendar: "手动添加", courseId: e.courseId || "", manual: true
+  }));
+  return base.concat(own);
+};
+const rawTodos = () => {
+  if (!Array.isArray(S.todos)) S.todos = JSON.parse(JSON.stringify(RAW.todos || []));
+  return S.todos;
+};
+
+/* ========== 日期解析 / RRULE 展开 ========== */
+function parseDate(v) {
+  if (!v) return null;
+  if (v instanceof Date) return v;
+  const s = String(v).trim();
+  let m = s.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+  m = s.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z?)$/);
+  if (m) {
+    return m[7] === "Z"
+      ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]))
+      : new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]);
+  }
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
+function parseRRule(str) {
+  const out = { freq: "WEEKLY", interval: 1, byday: null, until: null, count: null };
+  if (!str) return out;
+  String(str).replace(/^RRULE:/i, "").split(";").forEach(part => {
+    const [k, v] = part.split("=");
+    if (!k || !v) return;
+    const K = k.toUpperCase();
+    if (K === "FREQ") out.freq = v.toUpperCase();
+    else if (K === "INTERVAL") out.interval = Math.max(1, parseInt(v, 10) || 1);
+    else if (K === "BYDAY") out.byday = v.split(",").map(x => x.trim().toUpperCase().slice(-2));
+    else if (K === "UNTIL") out.until = parseDate(v);
+    else if (K === "COUNT") out.count = parseInt(v, 10) || null;
+  });
+  return out;
+}
+
+function expandEvent(ev, from, to) {
+  const start = parseDate(ev.start);
+  if (!start) return [];
+  const end = parseDate(ev.end) || new Date(start.getTime() + 36e5);
+  const dur = Math.max(0, end - start);
+  if (!ev.rrule) return (start >= from && start <= to) ? [{ ev, start, end }] : [];
+
+  const r = parseRRule(ev.rrule);
+  const byday = r.byday && r.byday.length ? r.byday : null;
+  const base = d0(start);
+  const limit = r.until ? new Date(Math.min(r.until.getTime() + 86399000, to.getTime())) : to;
+  const out = [];
+  let cursor = new Date(base);
+  let guard = 0;
+
+  while (cursor <= limit && guard++ < 1200 && out.length < 500) {
+    const code = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"][cursor.getDay()];
+    const wk = Math.round((sow(cursor) - sow(base)) / (7 * DAY));
+    let hit = false;
+    if (r.freq === "DAILY") hit = Math.round((cursor - base) / DAY) % r.interval === 0;
+    else if (r.freq === "WEEKLY") {
+      const sameDay = byday ? byday.indexOf(code) > -1 : cursor.getDay() === base.getDay();
+      hit = sameDay && wk % r.interval === 0;
+    } else if (r.freq === "MONTHLY") hit = cursor.getDate() === base.getDate() && (cursor.getMonth() - base.getMonth() + 12) % r.interval === 0;
+    if (hit) {
+      const s = new Date(cursor); s.setHours(start.getHours(), start.getMinutes(), 0, 0);
+      if (s >= from && s <= to) out.push({ ev, start: s, end: new Date(s.getTime() + dur) });
+      if (r.count && out.length >= r.count) break;
+    }
+    cursor = addDays(cursor, 1);
+  }
+  return out;
+}
+
+/* ========== 修正（手动修改，重新同步不覆盖） ==========
+   S.fix["ev:<uid>"]           → 整个事件 / 整个系列
+   S.fix["oc:<uid>@<原开始>"]   → 只改这一次
+   字段：title / courseId / start / end / hidden                              */
+const UID = ev => ev.uid || String(ev.id || "").split("@")[0] || ev.id;
+const isoOf = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+const fixKeyEv = ev => "ev:" + UID(ev);
+const fixKeyOc = (ev, d) => "oc:" + UID(ev) + "@" + isoOf(d);
+const hasFix = (ev, d) => {
+  const pe = S.fix[fixKeyEv(ev)] || {}, po = d ? (S.fix[fixKeyOc(ev, d)] || {}) : {};
+  return Object.keys(pe).length > 0 || Object.keys(po).length > 0;
+};
+
+/* 展开窗口：今天前 70 天 → 之后 240 天 */
+let CACHE = null;
+function instances() {
+  if (CACHE) return CACHE;
+  let from = addDays(termStart(), -21);
+  let to = addDays(termStart(), 150);
+  from=new Date(Math.min(from,addDays(d0(new Date()),-70))); to=new Date(Math.max(to,addDays(d0(new Date()),240)));
+  const all = [];
+  rawEvents().forEach(ev => {
+    const pe = S.fix[fixKeyEv(ev)] || {};
+    expandEvent(ev, from, to).forEach(it => {
+      const po = S.fix[fixKeyOc(ev, it.start)] || {};
+      const hidden = po.hidden != null ? po.hidden : pe.hidden;
+      const patch = Object.assign({}, pe, po);
+      if (hidden) return;
+      let start = it.start, end = it.end;
+      if (po.start) {
+        const s = parseDate(po.start);
+        if (s) { start = s; end = new Date(s.getTime() + Math.max(0, it.end - it.start)); }
+      }
+      if (po.end) { const e = parseDate(po.end); if (e) end = e; }
+      all.push({
+        ev, start, end, srcStart: it.start, patch,
+        sid: UID(ev) + "@" + isoOf(it.start),
+        edited: hasFix(ev, it.start), moved: !!(po.start || po.end)
+      });
+    });
+  });
+  all.sort((a, b) => a.start - b.start);
+  const rooms = all.filter(isRoomBooking);
+  const classes = all.filter(i => !isRoomBooking(i) && courseOf(i));
+  const hiddenRooms = new Set(rooms.filter(room => classes.some(i => overlaps(room,i))));
+  CACHE = all.filter(i => !hiddenRooms.has(i)).map(i => {
+    const room = rooms.filter(r => hiddenRooms.has(r) && overlaps(r,i)).sort((a,b) =>
+      (Math.min(b.end,i.end)-Math.max(b.start,i.start))-(Math.min(a.end,i.end)-Math.max(a.start,i.start)))[0];
+    return room && courseOf(i) ? Object.assign({},i,{venue:i.ev.location || room.ev.location || room.patch.title || room.ev.title}) : i;
+  });
+  return CACHE;
+}
+const invalidate = () => { CACHE = null; };
+
+function isRoomBooking(i) {
+  return /洽谈室/.test(String(i.patch.title || i.ev.title || '') + ' ' + String(i.ev.location || ''));
+}
+const overlaps = (a,b) => a.start < b.end && b.start < a.end;
+const minutesOf = i => Math.max(0, Math.round((i.end-i.start)/60000));
+const hoursFromMinutes = minutes => Math.round(minutes/60*100)/100;
+const durationText = minutes => `${Math.floor(minutes/60)} 小时${minutes%60?' '+minutes%60+' 分钟':''}`;
+const totalMinutes = rows => rows.reduce((n,r)=>n+minutesOf(r.i || r),0);
+const throughToday = date => date < addDays(d0(new Date()),1);
+const courseTitle = i => i.patch.title || i.ev.title || courseOf(i)?.name || "未命名课程";
+const locationOf = i => i.venue || i.ev.location || '';
+
+/* ========== 课程分类（固定 6 类） ========== */
+let COURSES = [];
+const COURSE_BY_ID = Object.create(null);
+function refreshCourseRoster(){
+  const roster=settings().courseRoster;
+  COURSES=(Array.isArray(roster)?roster:[]).filter(c=>c&&typeof c.id==='string'&&typeof c.name==='string').map(c=>({
+    id:c.id,name:c.name.slice(0,100),mode:['offline','online'].includes(c.mode)?c.mode:'',
+    keys:(Array.isArray(c.keys)?c.keys:[c.name]).map(String).filter(Boolean),color:/^#[0-9a-f]{6}$/i.test(c.color)?c.color:'#218478'
+  }));
+  Object.keys(COURSE_BY_ID).forEach(k=>delete COURSE_BY_ID[k]);COURSES.forEach(c=>COURSE_BY_ID[c.id]=c);
+}
+refreshCourseRoster();
+const MODE_LABEL = { offline: "线下", online: "线上", "": "待归类" };
+const courseById = id => COURSE_BY_ID[id] || null;
+
+const SUBJECTS = ["力学进阶", "竞赛专题", "电磁学答疑", "实验课", "物理", "数学", "语文", "英语", "化学", "生物", "历史", "地理", "政治", "班会", "自习"];
+const NOT_CLASS = /会议|研讨|评审|讲座|培训|家长会|报到|返程|出差|座谈|入职|准备|备课|试讲|磨课|打磨|引导|名单|材料|复盘|对接|沟通|汇报|例会/;
+
+function courseOf(it) {
+  const ev = (it && it.ev) ? it.ev : it;
+  const patch = (it && it.patch) || {};
+  const t = String(patch.title || ev.title || "").trim();
+
+  if (patch.courseId === "none") return null;
+  if (patch.courseId && courseById(patch.courseId)) return withMode(courseById(patch.courseId), t);
+  if (ev.courseId && courseById(ev.courseId)) return withMode(courseById(ev.courseId), t);
+
+  const clean = t.replace(/【[^】]*】/g, "");
+  const hit = COURSES.find(c => c.keys.some(k => clean.includes(k)));
+  if (hit && !NOT_CLASS.test(t)) return withMode(hit, t);
+
+  if (NOT_CLASS.test(t)) return null;
+  const subj = SUBJECTS.find(s => t.includes(s));
+  const classSignal = /班|课|授课|教学|1v\d|伴行|交付|答疑|辅导|培优|竞赛|专题/.test(t);
+  const looks = classSignal && (/线下|线上/.test(t) || subj || /伴行/.test(t));
+  if (looks) return withMode({ id: "unknown", name: subj || "待归类", mode: "", color: "#7b8794", unknown: true }, t);
+  return null;
+}
+
+/* 标题里带「线下」字样的课一律算线下课（自动生成路途费报销），带「线上/网课」反之 */
+function withMode(c, title) {
+  if (/线下/.test(title)) return c.mode === "offline" ? c : Object.assign({}, c, { mode: "offline" });
+  if (/线上|网课/.test(title)) return c.mode === "online" ? c : Object.assign({}, c, { mode: "online" });
+  return c;
+}
+
+const courseTag = c => c
+  ? `<span class="tag ${c.mode === "offline" ? "off-" : c.mode === "online" ? "on-" : ""}">${MODE_LABEL[c.mode] || "待归类"}</span>`
+  : "";
+
+/* ========== 费用识别（描述里抽金额） ========== */
+const EXP_CAT = [
+  { k: ["高铁", "动车", "火车", "机票", "航班", "飞机", "大巴", "长途", "候车"], c: "交通" },
+  { k: ["打车", "出租", "滴滴", "网约车", "地铁", "公交", "停车"], c: "市内交通" },
+  { k: ["住宿", "酒店", "宾馆", "民宿", "房费"], c: "住宿" },
+  { k: ["餐", "饭", "伙食", "晚宴", "早餐", "午餐", "晚餐"], c: "餐饮" },
+  { k: ["会议费", "注册费", "会务", "培训费"], c: "会议" },
+  { k: ["资料", "复印", "打印", "教材", "书"], c: "办公" },
+  { k: ["加油", "汽油", "过路", "高速费", "油费"], c: "车辆" }
+];
+function catOf(text) {
+  for (const g of EXP_CAT) if (g.k.some(k => text.includes(k))) return g.c;
+  return "其他";
+}
+function autoExpenses(ev) {
+  const text = [ev.description || "", ev.location || ""].join("\n");
+  if (!text.trim()) return [];
+  const out = [];
+  text.split(/[\n;；。]/).forEach(seg => {
+    const amt = seg.match(/[¥￥]\s*(\d+(?:\.\d+)?)/) || seg.match(/(\d+(?:\.\d+)?)\s*元/);
+    if (!amt) return;
+    const n = parseFloat(amt[1]);
+    if (!isFinite(n) || n <= 0 || n > 100000) return;
+    out.push({ cat: catOf(seg), amount: n, note: seg.trim().slice(0, 42) });
+  });
+  return out;
+}
+function expensesOf(ev) {
+  if (Array.isArray(ev.expenses) && ev.expenses.length) {
+    return ev.expenses.map(x => ({ cat: x.cat || catOf(x.note || ""), amount: Number(x.amount) || 0, note: x.note || "" }));
+  }
+  return autoExpenses(ev);
+}
+
+/* ========== 加班判定（周末 + 法定节假日） ==========
+   周末自动算加班；这里只列「非周末的法定节假日」。
+   国务院每年发布放假安排后，把日期补进来就行；
+   调休补班的周六/周日写进 WORKDAYS 就不算加班。                    */
+const HOLIDAYS = [
+  "2026-01-01", "2026-01-02", "2026-01-03",                                             // 元旦
+  "2026-02-16", "2026-02-17", "2026-02-18", "2026-02-19", "2026-02-20", "2026-02-21", "2026-02-22",  // 春节
+  "2026-04-04", "2026-04-05", "2026-04-06",                                             // 清明
+  "2026-05-01", "2026-05-02", "2026-05-03", "2026-05-04", "2026-05-05",                 // 劳动节
+  "2026-06-19", "2026-06-20", "2026-06-21",                                             // 端午
+  "2026-09-25", "2026-09-26", "2026-09-27",                                             // 中秋
+  "2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04", "2026-10-05", "2026-10-06", "2026-10-07"   // 国庆
+];
+const WORKDAYS = [];   // 调休补班的周末，例如 "2026-09-26"
+function otType(d) {
+  const k = key(d);
+  if (WORKDAYS.includes(k)) return null;      // 调休补班，不算加班
+  const weekend = d.getDay() === 0 || d.getDay() === 6;
+  if (HOLIDAYS.includes(k)) return "法定节假日";
+  return weekend ? "周末" : null;
+}
+
+/* ========== 月度模型 ========== */
+const monthOf = d => key(d).slice(0, 7);
+const monthTitle = m => `${+m.slice(0, 4)}年${+m.slice(5, 7)}月`;
+const monthLabel = m => (+m.slice(0, 4) === new Date().getFullYear()) ? `${+m.slice(5, 7)}月` : m.replace("-", "年") + "月";
+const inMonth = (d, m) => monthOf(d) === m;
+let curMonth = monthOf(new Date());
+let hideDone = false;
+
+function monthsList() {
+  const set = new Set([curMonth, monthOf(new Date())]);
+  instances().forEach(i => set.add(monthOf(i.start)));
+  (S.extra || []).forEach(x => set.add(String(x.date || "").slice(0, 7)));
+  return [...set].filter(x => /^\d{4}-\d{2}$/.test(x)).sort();
+}
+
+const courseInstances = () => instances().map(i => ({ i, co: courseOf(i) })).filter(x => x.co);
+
+/* 待报销：线下课路途费 + 描述里识别的差旅费 + 手动添加 */
+function moneyRows(m) {
+  const rows = [];
+  instances().forEach(inst => {
+    const co = courseOf(inst);
+    if (co && co.mode === "offline" && inMonth(inst.start, m)) {
+      rows.push({
+        key: inst.sid, date: inst.start, title: `${co.name} 路途费`, cat: "路途费",
+        amount: 150, invoice: "", status: "待提交", route: "", travel: true,
+        note: `${co.name}线下课 ${hm(inst.start)}-${hm(inst.end)}`
+      });
+    }
+    if (inMonth(inst.start, m)) expensesOf(inst.ev).forEach((x, idx) => {
+      rows.push({
+        key: `${inst.sid}#e${idx}`, date: inst.start,
+        title: String(inst.patch.title || inst.ev.title || "").slice(0, 32),
+        cat: x.cat, amount: x.amount, invoice: "", status: "待提交", note: x.note
+      });
+    });
+  });
+  (S.extra || []).forEach(x => {
+    if (String(x.date || "").slice(0, 7) === m) {
+      rows.push({
+        key: "m#" + x.id, date: parseDate(x.date) || new Date(), title: x.title, cat: x.cat,
+        amount: Number(x.amount) || 0, invoice: x.invoice || "", status: x.status || "待提交", manual: true, route: x.route || ""
+      });
+    }
+  });
+  rows.forEach(r => {
+    const o = (S.money || {})[r.key];
+    if (o) {
+      if (o.amount != null) r.amount = Number(o.amount) || 0;
+      if (o.invoice != null) r.invoice = o.invoice;
+      if (o.status) r.status = o.status;
+      if (o.cat) r.cat = o.cat;
+      if (o.route != null) r.route = o.route;
+      if (o.reimbursed != null) r.reimbursed = !!o.reimbursed;
+      if (o.skip) r.skip = true;
+    }
+  });
+  rows.forEach(r => {
+    if (r.reimbursed == null) r.reimbursed = r.status === '已到账' || r.status === '已报销';
+    r.route = r.route || '';
+  });
+  return rows.filter(r => !r.skip && throughToday(r.date)).sort((a, b) => a.date - b.date);
+}
+
+/* 加班行：周末 / 法定节假日的课 */
+function otRows(m) {
+  return courseInstances()
+    .filter(x => inMonth(x.i.start, m) && throughToday(x.i.start) && otType(x.i.start))
+    .map(x => ({ i:x.i, co:x.co, type:otType(x.i.start), hours:hoursFromMinutes(minutesOf(x.i)), applied:!!(S.overtime[x.i.sid] && S.overtime[x.i.sid].applied) }));
+}
+
+/* ========== 月度 CSV 内容 ========== */
+/* BOM 由服务端写文件时统一加（utf-8-sig），这里不加，避免双 BOM */
+const csvOf = rows => rows.map(r => r.map(c => `"${String(c == null ? "" : c).replace(/"/g, '""')}"`).join(",")).join("\r\n");
+
+function csvCourse(m) {
+  const cs = courseInstances().filter(x=>inMonth(x.i.start,m));
+  const rows = [['日期','星期','开始','结束','课程','课程标题','类型','时长(分钟)','时长(小时)','地点','备注']];
+  cs.forEach(({i,co})=>rows.push([key(i.start),WD[(i.start.getDay()+6)%7],hm(i.start),hm(i.end),co.name,
+    i.patch.title || i.ev.title || '',MODE_LABEL[co.mode] || '待归类',minutesOf(i),hoursFromMinutes(minutesOf(i)),locationOf(i),
+    [i.edited?'已修正':'',i.ev.manual?'手动补加':''].filter(Boolean).join(' ')]));
+  const minutes = totalMinutes(cs);
+  rows.push([`合计 ${cs.length} 节`,'','','','','','',minutes,hoursFromMinutes(minutes),'','']);
+  return csvOf(rows);
+}
+
+function csvMoney(m) {
+  const rows = moneyRows(m);
+  const out = [['日期','星期','事项','类别','往返路线','金额','发票','状态','已报销','备注']];
+  rows.forEach(r=>out.push([key(r.date),WD[(r.date.getDay()+6)%7],r.title,r.cat,r.route,
+    (Number(r.amount)||0).toFixed(2),r.invoice || '',r.status,r.reimbursed?'是':'否',r.note || '']));
+  for (const [label,items] of [['全部',rows],['未报销',rows.filter(r=>!r.reimbursed)],['已报销',rows.filter(r=>r.reimbursed)]]) {
+    out.push([`${label}合计`,'',`${items.length} 笔`,'','',items.reduce((a,r)=>a+(Number(r.amount)||0),0).toFixed(2),'','','','']);
+  }
+  return csvOf(out);
+}
+
+function csvOt(m) {
+  const rows = otRows(m);
+  const out = [['日期','星期','类型','开始','结束','课程名称','时长(分钟)','时长(小时)','调休申请状态']];
+  rows.forEach(r=>out.push([key(r.i.start),WD[(r.i.start.getDay()+6)%7],r.type,hm(r.i.start),hm(r.i.end),courseTitle(r.i),
+    minutesOf(r.i),hoursFromMinutes(minutesOf(r.i)),r.applied?'已申请调休':'未申请调休']));
+  for (const [label,items] of [['全部',rows],['已申请调休',rows.filter(r=>r.applied)],['未申请调休',rows.filter(r=>!r.applied)]]) {
+    const minutes=totalMinutes(items);
+    out.push([`${label}合计 ${items.length} 次`,'','','','','',minutes,hoursFromMinutes(minutes),'']);
+  }
+  return csvOf(out);
+}
+
+/* 哪些月份要写 CSV：有课或有报销数据的月份 + 当前月 */
+function csvMonths() {
+  const set = new Set([monthOf(new Date())]);
+  courseInstances().forEach(x => set.add(monthOf(x.i.start)));
+  (S.extra || []).forEach(x => set.add(String(x.date || "").slice(0, 7)));
+  return [...set].filter(x => /^\d{4}-\d{2}$/.test(x)).sort();
+}
+
+/* ========== 渲染 ========== */
+function renderMonths() {
+  const list = monthsList();
+  if (!list.includes(curMonth)) curMonth = list.includes(monthOf(new Date())) ? monthOf(new Date()) : list[list.length - 1];
+  $("#month-bar").innerHTML = list.map(m =>
+    `<button class="mchip ${m === curMonth ? "on" : ""}" data-m="${m}">${monthLabel(m)}</button>`).join("");
+}
+
+function renderMetrics() {
+  const cs = courseInstances().filter(x => inMonth(x.i.start, curMonth));
+  const off = cs.filter(x => x.co.mode === "offline").length;
+  const mrows = moneyRows(curMonth);
+  const due = mrows.filter(r => !r.reimbursed);
+  const ots = otRows(curMonth);
+  const wk = ots.filter(r => r.type === "周末").length, hd = ots.length - wk;
+  const hrs = Math.round(ots.reduce((a, b) => a + b.hours, 0) * 10) / 10;
+  const openTodos = rawTodos().filter(t => !t.done);
+  const now = new Date();
+
+  $("#metrics").innerHTML = `
+    <div class="metric hl">
+      <div class="k">${monthTitle(curMonth)} · 课时</div>
+      <div class="v num">${cs.length}<small>节</small></div>
+      <div class="f">合计 ${durationText(totalMinutes(cs))} · 线下 ${off} / 线上 ${cs.length-off}</div>
+    </div>
+    <div class="metric">
+      <div class="k">待报销</div>
+      <div class="v num">${money(due.reduce((a, b) => a + (Number(b.amount) || 0), 0))}</div>
+      <div class="f">${due.length} 笔未报销 · ${due.filter(r => !r.amount).length} 笔金额待填</div>
+    </div>
+    <div class="metric">
+      <div class="k">加班</div>
+      <div class="v num">${ots.length}<small>次</small></div>
+      <div class="f">${hoursFromMinutes(totalMinutes(ots))} 小时 · 未申请 ${ots.filter(r=>!r.applied).length} 次 / ${hoursFromMinutes(totalMinutes(ots.filter(r=>!r.applied)))} 小时</div>
+    </div>
+    <div class="metric">
+      <div class="k">未完成待办</div>
+      <div class="v num">${openTodos.length}<small>条</small></div>
+      <div class="f">${openTodos.filter(t => t.due && new Date(t.due + "T23:59:59") < now).length} 条已逾期</div>
+    </div>`;
+}
+
+function renderCourse() {
+  const cs=courseInstances().filter(x=>inMonth(x.i.start,curMonth));
+  const minutes=totalMinutes(cs),off=cs.filter(x=>x.co.mode==='offline').length;
+  $('#c-hint').textContent=`${monthTitle(curMonth)} · ${cs.length} 节 · ${durationText(minutes)}（线下 ${off} / 线上 ${cs.length-off}）`;
+  $('#kk-course-week-label').textContent=weekLabel(kkCourseWeek);
+  const week=weekItems(courseInstances().map(x=>x.i),kkCourseWeek);
+  $('#kk-course-calendar').innerHTML=weekGrid(week,kkCourseWeek);
+  $('#kk-course-week-total').textContent=`本周 ${week.length} 节 · ${durationText(totalMinutes(week))}。课时按实际起止时间计算。`;
+}
+
+const weekLabel = start => `${key(start)} — ${key(addDays(start,6))}`;
+const weekItems = (items,start) => items.filter(i=>i.start<addDays(start,7)&&i.end>start);
+function timetableBands(items,start) {
+  const spans=[];
+  for(let n=0;n<7;n++){
+    const date=addDays(start,n),next=addDays(date,1);
+    items.forEach(i=>{
+      if(i.start<next && i.end>date){
+        const from=Math.max(0,(i.start-date)/60000),to=Math.min(1440,(i.end-date)/60000);
+        if(to>from)spans.push({from,to});
+      }
+    });
+  }
+  spans.sort((a,b)=>a.from-b.from || a.to-b.to);
+  const groups=[];
+  spans.forEach(span=>{
+    const last=groups[groups.length-1];
+    // A shared gap shorter than one hour stays on the time axis.
+    if(last && span.from-last.to<60)last.to=Math.max(last.to,span.to);
+    else groups.push({from:span.from,to:span.to});
+  });
+  if(!groups.length)return [];
+  groups[0].from=Math.floor(groups[0].from/60)*60;
+  groups[groups.length-1].to=Math.ceil(groups[groups.length-1].to/60)*60;
+  let top=0;
+  return groups.map((band,n)=>{
+    const gap=n?{from:groups[n-1].to,to:band.from,top}:null;
+    if(gap)top+=20;
+    const result={from:band.from,to:band.to,top,height:(band.to-band.from)*.8,gap};
+    top+=result.height;return result;
+  });
+}
+const clockMinute = minute => {
+  const m=Math.round(minute);return `${pad2(Math.floor(m/60))}:${pad2(m%60)}`;
+};
+function weekGrid(items,start) {
+  const week=weekItems(items,start),bands=timetableBands(week,start);
+  const head=`<div class="kk-ct-head"><div>时间</div>${Array.from({length:7},(_,n)=>{
+    const d=addDays(start,n);return `<div class="${key(d)===key(new Date())?'today':''}">${WD[n]}<strong>${d.getMonth()+1}/${d.getDate()}</strong></div>`;
+  }).join('')}</div>`;
+  if(!bands.length)return head+'<div class="kk-empty">本周没有安排。</div>';
+  const height=bands[bands.length-1].top+bands[bands.length-1].height;
+  const position=minute=>{
+    const band=bands.find(b=>minute>=b.from && minute<=b.to);
+    return band?band.top+(minute-band.from)*.8:height;
+  };
+  const marks=[];
+  bands.forEach(b=>{
+    marks.push({minute:b.from,top:b.top});
+    for(let m=Math.ceil(b.from/60)*60;m<b.to;m+=60)
+      if(m-b.from>=20)marks.push({minute:m,top:position(m)});
+  });
+  const gaps=bands.filter(b=>b.gap).map(b=>b.gap);
+  const axis=`<div class="kk-ct-axis" style="height:${height}px">${marks.map(m=>`<time style="top:${m.top}px">${clockMinute(m.minute)}</time>`).join('')}${gaps.map(g=>`<span class="kk-axis-fold" style="top:${g.top}px" aria-hidden="true">···</span>`).join('')}</div>`;
+  const lines=marks.map(m=>`<i class="kk-time-line" style="top:${m.top}px" aria-hidden="true"></i>`).join('');
+  const cols=Array.from({length:7},(_,n)=>{
+    const date=addDays(start,n),next=addDays(date,1);
+    const day=week.filter(i=>i.start<next&&i.end>date).map(i=>({i,co:courseOf(i),from:Math.max(date.getTime(),i.start.getTime()),to:Math.min(next.getTime(),i.end.getTime())}));
+    return `<div class="kk-ct-day" style="height:${height}px">${lines}${layoutCourses(day).map(({i,co,from,to,lane,lanes})=>{
+      const top=position((from-date.getTime())/60000),bottom=position((to-date.getTime())/60000);
+      const style=co?co.mode==='online'?'online':'':'other';
+      const title=i.patch.title||i.ev.title||'未命名安排',venue=locationOf(i);
+      return `<button class="kk-ct-event ${style}" data-kk-edit="${esc(i.sid)}" style="top:${top}px;height:${Math.max(12,bottom-top-4)}px;left:calc(${lane/lanes*100}% + 3px);width:calc(${100/lanes}% - 6px)" title="${esc(title)} · ${hm(i.start)}–${hm(i.end)}${venue?' · '+esc(venue):''}"><small>${hm(i.start)}–${hm(i.end)}</small><strong>${esc(title)}</strong><small>${co?hoursFromMinutes(minutesOf(i))+' 小时 · '+esc(MODE_LABEL[co.mode]||'待归类'):esc(venue||'行程 / 其他')}</small></button>`;
+    }).join('')}</div>`;
+  }).join('');
+  const folds=gaps.map(g=>`<div class="kk-time-fold" style="top:${g.top}px">${clockMinute(g.from)}–${clockMinute(g.to)} 空闲已折叠</div>`).join('');
+  return head+`<div class="kk-ct-body">${axis}${cols}${folds}</div>`+'<div class="kk-fold-note">整周共同空闲满 1 小时的时段自动收起。</div>';
+}
+
+function layoutCourses(events) {
+  const sorted=events.slice().sort((a,b)=>a.from-b.from || a.to-b.to),result=[];
+  let group=[],end=-Infinity;
+  const flush=()=>{
+    const laneEnds=[];
+    group.forEach(event=>{
+      let lane=laneEnds.findIndex(t=>t<=event.from);
+      if(lane<0)lane=laneEnds.length;
+      laneEnds[lane]=event.to;event.lane=lane;
+    });
+    group.forEach(event=>result.push(Object.assign(event,{lanes:laneEnds.length})));
+    group=[];
+  };
+  sorted.forEach(event=>{if(event.from>=end){flush();end=-Infinity;}group.push(event);end=Math.max(end,event.to);});
+  flush();return result;
+}
+
+const DEFAULT_ROUTES=['家 → 高复 → 家','公司 → 高复 → 家','家 → 教育园 → 家','公司 → 教育园 → 家'];
+const normalizeRoute = value => String(value || '').trim().replace(/\s*(?:->|→|>)\s*/g,' → ');
+function routeChoices() {
+  return [...new Set(DEFAULT_ROUTES.concat(S.routes || [],(S.extra || []).map(r=>r.route),Object.values(S.money || {}).map(r=>r.route)).map(normalizeRoute).filter(Boolean))];
+}
+function rememberRoute(value) {
+  const route=normalizeRoute(value);
+  if(!route || DEFAULT_ROUTES.includes(route) || S.routes.includes(route))return false;
+  S.routes.push(route);return true;
+}
+function renderRouteOptions() {
+  const routes=routeChoices();
+  $('#kk-route-options').innerHTML=routes.map(route=>`<option value="${esc(route)}"></option>`).join('');
+  const custom=routes.filter(route=>!DEFAULT_ROUTES.includes(route));
+  $('#kk-custom-routes').innerHTML=custom.length?custom.map(route=>`<span class="tag">${esc(route)}</span>`).join(''):'<span class="muted">添加后可在每笔报销的路线框中选择。</span>';
+}
+function renderMoney() {
+  renderRouteOptions();
+  const all=moneyRows(curMonth),filter=$('#kk-money-filter').value;
+  const rows=all.filter(r=>filter==='all'||(filter==='paid'?r.reimbursed:!r.reimbursed));
+  const unpaid=all.filter(r=>!r.reimbursed),paid=all.filter(r=>r.reimbursed);
+  $('#m-hint').textContent=`${monthTitle(curMonth)} · 截至今天 · 未报销 ${unpaid.length} 笔 ${money(unpaid.reduce((a,r)=>a+r.amount,0))} · 已报销 ${paid.length} 笔 ${money(paid.reduce((a,r)=>a+r.amount,0))}`;
+  const ST=['待提交','已提交','已到账'];
+  const body=rows.map(r=>`<tr class="${r.reimbursed?'kk-marked':!r.amount?'need':''}">
+    <td class="num">${key(r.date)}</td><td class="wrap">${esc(r.title)}${r.manual?'<span class="tag">手动</span>':''}</td>
+    <td><input class="kk-route" list="kk-route-options" data-route="${esc(r.key)}" value="${esc(r.route)}" placeholder="选择或填写往返路线" aria-label="往返路线：${esc(r.title)} ${key(r.date)}"></td>
+    <td class="muted">${esc(r.cat)}</td><td><input data-amt="${esc(r.key)}" value="${r.amount}" placeholder="默认 150 元" inputmode="decimal" style="width:76px;text-align:right" aria-label="金额：${esc(r.title)} ${key(r.date)}"></td>
+    <td><select data-st="${esc(r.key)}" aria-label="状态：${esc(r.title)} ${key(r.date)}">${ST.map(st=>`<option ${r.status===st?'selected':''}>${st}</option>`).join('')}</select></td>
+    <td><label class="kk-check"><input type="checkbox" data-paid="${esc(r.key)}" ${r.reimbursed?'checked':''}><span>${r.reimbursed?'已报销':'未报销'}</span></label></td>
+    <td><input data-inv="${esc(r.key)}" value="${esc(r.invoice)}" placeholder="发票文件名" style="width:120px" aria-label="发票：${esc(r.title)} ${key(r.date)}"></td>
+    <td><button class="rmv" data-rm2="${esc(r.key)}" title="移除这条">×</button></td></tr>`).join('');
+  $('#m-table').innerHTML=`<thead><tr><th>日期</th><th>事项</th><th>往返路线</th><th>类别</th><th>金额</th><th>提交状态</th><th>报销标记</th><th>发票</th><th></th></tr></thead><tbody>${body||'<tr><td colspan="9"><div class="empty">当前筛选下没有报销记录。</div></td></tr>'}</tbody>`;
+}
+
+function renderOt() {
+  const all=otRows(curMonth),filter=$('#kk-ot-filter').value;
+  const rows=all.filter(r=>filter==='all'||(filter==='applied'?r.applied:!r.applied));
+  const applied=all.filter(r=>r.applied),pending=all.filter(r=>!r.applied);
+  $('#o-sum').textContent=`${monthTitle(curMonth)} · 截至今天 · 共 ${all.length} 次 / ${hoursFromMinutes(totalMinutes(all))} 小时 · 已申请 ${applied.length} 次 / ${hoursFromMinutes(totalMinutes(applied))} 小时 · 未申请 ${pending.length} 次 / ${hoursFromMinutes(totalMinutes(pending))} 小时`;
+  $('#o-table').innerHTML=`<thead><tr><th>日期</th><th>星期</th><th>类型</th><th>时间</th><th>课程名称</th><th>时长</th><th>调休申请标记</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.applied?'kk-marked':''}"><td class="num">${key(r.i.start)}</td><td class="muted">${WD[(r.i.start.getDay()+6)%7]}</td><td><span class="ot-tag ${r.type==='周末'?'wk':'hd'}">${r.type}</span></td><td class="num">${hm(r.i.start)}–${hm(r.i.end)}</td><td class="wrap kk-ot-title">${esc(courseTitle(r.i))}</td><td class="num">${hoursFromMinutes(minutesOf(r.i))} 小时</td><td><label class="kk-check"><input type="checkbox" data-ot="${esc(r.i.sid)}" ${r.applied?'checked':''}><span>${r.applied?'已申请调休':'未申请调休'}</span></label></td></tr>`).join('')||'<tr><td colspan="7"><div class="empty">当前筛选下没有加班记录。</div></td></tr>'}</tbody>`;
+}
+
+function renderTodo() {
+  const list = rawTodos().slice();
+  const open = list.filter(t => !t.done);
+  $("#td-hint").textContent = `${open.length} 条未完成 / 共 ${list.length} 条`;
+  $("#td-hide").textContent = hideDone ? "显示已完成" : "隐藏已完成";
+  const now = new Date();
+  const show = list.filter(t => hideDone ? !t.done : true)
+    .sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0) || String(a.due || "9999").localeCompare(String(b.due || "9999")));
+
+  $("#td-list").innerHTML = show.length ? show.map(t => {
+    const over = !t.done && t.due && new Date(t.due + "T23:59:59") < now;
+    return `<div class="todo ${t.done ? "done" : ""} ${over ? "overdue" : ""}" data-id="${esc(t.id)}">
+      <button class="cb" data-toggle="${esc(t.id)}"><svg><use href="#i-check"/></svg></button>
+      <div class="tx">
+        <b>${esc(t.title)}</b>
+        <span>${t.due ? `<em style="font-style:normal;color:${over ? "var(--warn)" : "inherit"}">截止 ${t.due}</em>` : ""}${t.src ? `<em style="font-style:normal">来自 ${esc(t.src)}</em>` : ""}</span>
+      </div>
+      <button class="del" data-rm="${esc(t.id)}">×</button>
+    </div>`;
+  }).join("") : `<div class="empty">还没有待办。事件描述里带「待办：」的行会自动变成待办。</div>`;
+}
+
+function renderHead(){
+  const count=instances().length;
+  $('#sync-pill').classList.toggle('live',count>0);
+  $('#sync-text').textContent=count?'浏览器已保存 · '+count+' 项安排':'在线版 · 等待导入';
+}
+
+
+function render() {
+  renderMonths();
+  renderHead();
+  renderMetrics();
+  renderCourse();
+  renderMoney();
+  renderOt();
+  renderTodo();
+  kkRenderDashboard();
+}
+
+
+/* ========== 课间视图：复用同一套日历、修正和报销数据 ========== */
+let kkView = 'overview';
+let kkWeek = sow(new Date());
+let kkCourseWeek = sow(new Date());
+let kkAgendaWeek = sow(new Date());
+const kkViews = {
+  overview:['工作台','把时间，留给教学。','看清每一节课，安排每一段路，也不漏掉每一笔报销。'],
+  courses:['我的课表','每一节课，都心中有数。','点击课程可修正标题、分类与时间，或隐藏已取消的课。'],
+  agenda:['行程安排','从容安排，每一段路。','按周查看会议、出行与其他安排，时间位置一目了然。'],
+  expenses:['报销管理','让每一笔支出，有迹可循。','填写往返路线与实际支出，勾选已报销记录。'],
+  overtime:['加班统计','记录每一份，额外的投入。','记录实际加班时长，区分已申请与未申请调休。'],
+  todos:['我的待办','一件一件，慢慢做好。','课程里的待办和自己记下的小事，都放在这里。']
+};
+const kkSvg = (name) => ({"layers": "<svg class=\"kk-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5\"/></svg>", "grid": "<svg class=\"kk-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1.5\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1.5\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1.5\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"1.5\"/></svg>", "calendar": "<svg class=\"kk-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"2\"/><path d=\"M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2\"/></svg>", "route": "<svg class=\"kk-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"6\" cy=\"5\" r=\"2\"/><circle cx=\"18\" cy=\"19\" r=\"2\"/><path d=\"M8 5h7a4 4 0 0 1 0 8H9a3 3 0 0 0 0 6h7\"/></svg>", "wallet": "<svg class=\"kk-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 8V5a2 2 0 0 0-2-2H6a3 3 0 0 0 0 6h14v12H6a3 3 0 0 1-3-3V6m17 7h-5v4h5\"/></svg>", "clock": "<svg class=\"kk-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 2\"/></svg>", "checklist": "<svg class=\"kk-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m3 6 1.5 1.5L7 4M10 6h11M3 12h4m3 0h11M3 18h4m3 0h11\"/></svg>", "sliders": "<svg class=\"kk-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 3v18M12 3v18M20 3v18\"/><rect x=\"1\" y=\"7\" width=\"6\" height=\"4\" rx=\"1\"/><rect x=\"9\" y=\"14\" width=\"6\" height=\"4\" rx=\"1\"/><rect x=\"17\" y=\"6\" width=\"6\" height=\"4\" rx=\"1\"/></svg>", "refresh": "<svg class=\"kk-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 7V3l-4 4m4 0A9 9 0 0 0 4 8m0 9v4l4-4m-4 0a9 9 0 0 0 16-1\"/></svg>", "plus": "<svg class=\"kk-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg>", "arrow": "<svg class=\"kk-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 12h16m-6-6 6 6-6 6\"/></svg>", "sun": "<svg class=\"kk-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5\"/></svg>", "spark": "<svg class=\"kk-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m12 3 2.3 6.7L21 12l-6.7 2.3L12 21l-2.3-6.7L3 12l6.7-2.3L12 3Z\"/></svg>", "lock": "<svg class=\"kk-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"5\" y=\"10\" width=\"14\" height=\"11\" rx=\"2\"/><path d=\"M8 10V7a4 4 0 0 1 8 0v3m-4 5v2\"/></svg>", "menu": "<svg class=\"kk-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 6h16M4 12h16M4 18h16\"/></svg>"})[name] || '';
+function kkSetView(view) {
+  if (!kkViews[view]) return;
+  kkView = view;
+  const period=$('.kk-period');
+  if(view==='overview')$('.kk-bottom-stats').insertBefore(period,$('#metrics'));
+  else $('.kk-heading').insertAdjacentElement('afterend',period);
+  $('.kk-main').dataset.currentView=view;
+  const [title,heading,sub] = kkViews[view];
+  $('#kk-crumb').textContent = title;
+  $('#kk-title').textContent = heading;
+  $('#kk-subtitle').textContent = sub;
+  $$('[data-page]').forEach(el => { el.hidden = el.dataset.page !== view; });
+  $$('.kk-nav[data-view]').forEach(el => {
+    el.classList.toggle('active',el.dataset.view === view);
+    el.setAttribute('aria-current',el.dataset.view === view ? 'page' : 'false');
+  });
+  $('#kk-sidebar').classList.remove('open'); $('#kk-scrim').hidden = true;
+  if (location.hash !== '#' + view) history.replaceState(null,'','#' + view);
+}
+function kkRenderDashboard() {
+  const now = new Date(), todayKey = key(now), all = instances();
+  $('#kk-date').textContent = `${now.getFullYear()} 年 ${now.getMonth()+1} 月 ${now.getDate()} 日 · ${WD[(now.getDay()+6)%7]}`;
+  $('#kk-today-label').textContent = `${now.getMonth()+1} 月 ${now.getDate()} 日 · ${WD[(now.getDay()+6)%7]}`;
+  $('#kk-week-label').textContent = `${key(kkWeek).replaceAll('-','.')} — ${key(addDays(kkWeek,6)).replaceAll('-','.')}`;
+  $('#kk-week').innerHTML=weekGrid(all,kkWeek);
+  const today = all.filter(i=>i.start < addDays(d0(now),1) && i.end > d0(now));
+  $('#kk-today').innerHTML = today.length ? today.map(i=>`<button class="kk-timeline" data-kk-edit="${esc(i.sid)}"><time>${hm(i.start)}–${hm(i.end)}${i.end<=now?' · 已结束':i.start<=now?' · 进行中':''}</time><strong>${esc(i.patch.title || i.ev.title || '未命名安排')}</strong><small>${esc(locationOf(i) || (courseOf(i)?.mode==='online'?'线上授课':'未填写地点'))}</small></button>`).join('') : `<div class="kk-empty">${kkSvg('sun')}<strong>今天暂时没有安排</strong>留一点时间备课，也留一点给自己。</div>`;
+  const pending = moneyRows(curMonth).filter(r=>!r.reimbursed);
+  $('#kk-pending-count').textContent = pending.length;
+  $('#kk-expenses-preview').innerHTML = pending.length ? `<table class="tbl"><thead><tr><th>日期</th><th>报销事项</th><th>往返路线</th><th>金额</th><th>状态</th></tr></thead><tbody>${pending.slice(0,4).map(r=>`<tr><td class="num">${key(r.date)}</td><td class="wrap">${esc(r.title)}</td><td class="muted">${esc(r.route||"待填写路线")}</td><td class="num">${r.amount?money(r.amount):'<span class="muted">待填写</span>'}</td><td><span class="kk-status">${esc(r.status)}</span></td></tr>`).join('')}</tbody></table>` : '<div class="kk-empty">这个月的待报销已经整理好了。</div>';
+  const other=weekItems(all.filter(i=>!courseOf(i)),kkAgendaWeek);
+  $('#kk-agenda-week-label').textContent=weekLabel(kkAgendaWeek);
+  $('#kk-agenda-list').innerHTML=weekGrid(other,kkAgendaWeek);
+  $('#kk-agenda-summary').textContent=`本周 ${other.length} 项行程。点击安排可查看或修改详情。`;
+  const metricIcons = ['calendar','wallet','clock','checklist'];
+  $$('#metrics .metric').forEach((el,n)=>{ el.querySelector('.kk-stat-icon')?.remove(); el.insertAdjacentHTML('beforeend',`<span class="kk-stat-icon">${kkSvg(metricIcons[n])}</span>`); });
+}
+function kkBind() {
+  document.addEventListener('click',e=>{
+    const nav = e.target.closest('[data-view]');
+    if(nav){kkSetView(nav.dataset.view);return;}
+    const edit = e.target.closest('[data-kk-edit]');
+    if(edit){openEdit(edit.dataset.kkEdit);return;}
+    const courseWeek = e.target.closest('[data-course-week]');
+    if(courseWeek){
+      kkCourseWeek=courseWeek.dataset.courseWeek==='today'?sow(new Date()):addDays(kkCourseWeek,7*Number(courseWeek.dataset.courseWeek));
+      curMonth=monthOf(addDays(kkCourseWeek,3));render();return;
+    }
+    const agendaWeek=e.target.closest('[data-agenda-week]');
+    if(agendaWeek){
+      kkAgendaWeek=agendaWeek.dataset.agendaWeek==='today'?sow(new Date()):addDays(kkAgendaWeek,7*Number(agendaWeek.dataset.agendaWeek));
+      curMonth=monthOf(addDays(kkAgendaWeek,3));render();return;
+    }
+    const week = e.target.closest('[data-week]');
+    if(week){kkWeek = week.dataset.week==='today'?sow(new Date()):addDays(kkWeek,7*Number(week.dataset.week));kkRenderDashboard();}
+  });
+  $('#kk-agenda-list').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-kk-edit]')){e.preventDefault();openEdit(e.target.dataset.kkEdit);}});
+  $('#kk-money-filter').onchange=renderMoney;
+  $('#kk-ot-filter').onchange=renderOt;
+  $('#o-table').addEventListener('change',e=>{
+    const input=e.target.closest('[data-ot]');if(!input)return;
+    S.overtime[input.dataset.ot]={applied:input.checked};save();render();
+  });
+  $('#kk-sync').onclick = async ()=>{const b=$('#kk-sync');b.disabled=true;try{await autoSync(true);}finally{b.disabled=false;}};
+  $('#kk-settings').onclick = openData;
+  $('#kk-menu').onclick = ()=>{$('#kk-sidebar').classList.add('open');$('#kk-scrim').hidden=false;};
+  $('#kk-scrim').onclick = ()=>{$('#kk-sidebar').classList.remove('open');$('#kk-scrim').hidden=true;};
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('#kk-sidebar').classList.remove('open');$('#kk-scrim').hidden=true;}});
+  $('#kk-export-course').onclick = ()=>download(`上课信息_${curMonth}.csv`,'\ufeff'+csvCourse(curMonth),'text/csv;charset=utf-8');
+  $('#kk-export-money').onclick = ()=>download(`待报销_${curMonth}.csv`,'\ufeff'+csvMoney(curMonth),'text/csv;charset=utf-8');
+  $('#kk-export-ot').onclick = ()=>download(`加班_${curMonth}.csv`,'\ufeff'+csvOt(curMonth),'text/csv;charset=utf-8');
+  window.addEventListener('hashchange',()=>kkSetView(location.hash.slice(1)));
+  kkSetView(kkViews[location.hash.slice(1)]?location.hash.slice(1):'overview');
+}
+
+/* ========== 修改安排（手动修正，重新同步不覆盖） ========== */
+let editing = null;
+
+function fillCourseSelect(cur) {
+  const opts = [`<option value="auto">自动识别（按标题）</option>`]
+    .concat(COURSES.map(c => `<option value="${c.id}">${c.name}（${c.mode === "offline" ? "线下 · 可报路途费" : "线上"}）</option>`))
+    .concat([`<option value="none">不是课（普通行程）</option>`]);
+  $("#ed-course").innerHTML = opts.join("");
+  $("#ed-course").value = cur || "auto";
+}
+
+const findInst = sid => instances().find(i => i.sid === sid) || null;
+
+function openEdit(sid) {
+  const inst = findInst(sid);
+  if (!inst) { toast("这条已经不在当前范围里"); return; }
+  editing = { inst, isNew: false };
+  $("#ed-title").textContent = "修改安排";
+  $("#ed-name").value = inst.patch.title || inst.ev.title || "";
+  fillCourseSelect(inst.patch.courseId || inst.ev.courseId || "auto");
+  $("#ed-date").value = key(inst.start);
+  $("#ed-t1").value = hm(inst.start);
+  $("#ed-t2").value = hm(inst.end);
+  $("#ed-hide").checked = false;
+  $("#ed-series").style.display = inst.ev.rrule ? "" : "none";
+  $("#ed-reset").style.display = hasFix(inst.ev, inst.srcStart) ? "" : "none";
+  $("#ed-del").style.display = inst.ev.manual ? "" : "none";
+  $("#ed-note").innerHTML = inst.ev.rrule
+    ? `这是<b>每周重复</b>的课：「保存这一次」只改 ${inst.start.getMonth() + 1}月${inst.start.getDate()}日 这次；「改整个系列」改所有周次（仅标题和归类生效）。`
+    : `改动只存本机，<b>重新同步飞书日历不会覆盖</b>。`;
+  $("#edlg").showModal();
+}
+
+function openNew() {
+  editing = { inst: null, isNew: true };
+  $("#ed-title").textContent = "补一节课";
+  $("#ed-name").value = "";
+  fillCourseSelect("auto");
+  $("#ed-date").value = key(new Date());
+  $("#ed-t1").value = "19:00";
+  $("#ed-t2").value = "20:30";
+  $("#ed-hide").checked = false;
+  $("#ed-series").style.display = "none";
+  $("#ed-reset").style.display = "none";
+  $("#ed-del").style.display = "none";
+  $("#ed-note").innerHTML = `飞书里忘了加的课在这里补上，只存本机，<b>重新同步不会丢</b>。`;
+  $("#edlg").showModal();
+}
+
+function saveEdit(scope) {
+  const name = $("#ed-name").value.trim();
+  const courseId = $("#ed-course").value;
+  const st = parseDate(`${$("#ed-date").value}T${($("#ed-t1").value || "08:00")}:00`);
+  const en = parseDate(`${$("#ed-date").value}T${($("#ed-t2").value || "09:00")}:00`);
+  const hide = $("#ed-hide").checked;
+  if (!name) { toast("标题不能为空"); return; }
+  if (!st || !en) { toast("日期和时间要填完整"); return; }
+  if (en <= st) { toast("结束时间要晚于开始时间"); return; }
+
+  if (editing && editing.isNew) {
+    const nid = "add-" + Date.now();
+    S.added = S.added || [];
+    S.added.push({
+      id: nid, uid: nid, title: name,
+      courseId: (courseId === "auto" || courseId === "none") ? "" : courseId,
+      start: isoOf(st), end: isoOf(en), location: "", note: ""
+    });
+    save(); invalidate(); render(); $("#edlg").close();
+    toast("已添加，重新同步也不会丢");
+    return;
+  }
+
+  const inst = editing && editing.inst;
+  if (!inst) return;
+
+  const k = scope === "series" ? fixKeyEv(inst.ev) : fixKeyOc(inst.ev, inst.srcStart);
+  const cur = Object.assign({}, S.fix[k] || {});
+
+  if (name === (inst.ev.title || "")) delete cur.title; else cur.title = name;
+  if (courseId === "auto") delete cur.courseId; else cur.courseId = courseId;
+
+  if (scope !== "series") {
+    const origEnd = new Date(inst.srcStart.getTime() + Math.max(0, inst.end - inst.start));
+    if (isoOf(st) !== isoOf(inst.start)) {
+      if (isoOf(st) === isoOf(inst.srcStart)) delete cur.start; else cur.start = isoOf(st);
+    }
+    if (isoOf(en) !== isoOf(inst.end)) {
+      if (isoOf(en) === isoOf(origEnd)) delete cur.end; else cur.end = isoOf(en);
+    }
+  }
+  if (hide) cur.hidden = true; else if (cur.hidden) delete cur.hidden;
+
+  if (Object.keys(cur).length) S.fix[k] = cur; else delete S.fix[k];
+  save(); invalidate(); render(); $("#edlg").close();
+  toast(scope === "series" ? "已修改整个系列" : "已保存（这一次）");
+}
+
+function resetEdit() {
+  const inst = editing && editing.inst;
+  if (!inst) return;
+  delete S.fix[fixKeyEv(inst.ev)];
+  delete S.fix[fixKeyOc(inst.ev, inst.srcStart)];
+  save(); invalidate(); render(); $("#edlg").close();
+  toast("已恢复成飞书原始内容");
+}
+
+function deleteManual() {
+  const inst = editing && editing.inst;
+  if (!inst || !inst.ev.manual) return;
+  S.added = (S.added || []).filter(e => e.id !== inst.ev.id);
+  delete S.fix[fixKeyEv(inst.ev)];
+  delete S.fix[fixKeyOc(inst.ev, inst.srcStart)];
+  save(); invalidate(); render(); $("#edlg").close();
+  toast("已删除");
+}
+
+function bindEdit() {
+  $("#c-table").addEventListener("click", e => {
+    const tr = e.target.closest("tr[data-edit]");
+    if (tr) openEdit(tr.dataset.edit);
+  });
+  $("#btn-add").addEventListener("click", openNew);
+  $("#ed-x").addEventListener("click", () => $("#edlg").close());
+  $("#edlg").addEventListener("click", e => { if (e.target === $("#edlg")) $("#edlg").close(); });
+  $("#ed-save").addEventListener("click", () => saveEdit("once"));
+  $("#ed-series").addEventListener("click", () => saveEdit("series"));
+  $("#ed-reset").addEventListener("click", resetEdit);
+  $("#ed-del").addEventListener("click", deleteManual);
+}
+
+/* ========== 待办 ========== */
+function bindTodo() {
+  $("#td-list").addEventListener("click", e => {
+    const tg = e.target.closest("[data-toggle]");
+    const rm = e.target.closest("[data-rm]");
+    if (tg) {
+      const list = rawTodos(); const t = list.find(x => x.id === tg.dataset.toggle);
+      if (t) { t.done = !t.done; save(); renderTodo(); renderMetrics(); }
+    }
+    if (rm) {
+      S.todos = rawTodos().filter(x => x.id !== rm.dataset.rm);
+      save(); renderTodo(); renderMetrics();
+    }
+  });
+  $("#td-add").addEventListener("click", () => {
+    const t = $("#td-title").value.trim();
+    if (!t) return;
+    rawTodos().push({ id: "t" + Date.now(), title: t, due: $("#td-due").value || "", src: "" });
+    save(); $("#td-title").value = ""; $("#td-due").value = "";
+    renderTodo(); renderMetrics(); toast("已加一条");
+  });
+  $("#td-title").addEventListener("keydown", e => { if (e.key === "Enter") $("#td-add").click(); });
+  $("#td-hide").addEventListener("click", () => { hideDone = !hideDone; renderTodo(); });
+}
+
+/* ========== 报销编辑 ========== */
+function bindMoney() {
+  $('#kk-route-add').addEventListener('click',()=>{
+    const value=$('#kk-route-name').value;
+    if(!normalizeRoute(value)){toast('请填写路线');return;}
+    const added=rememberRoute(value);save();renderRouteOptions();$('#kk-route-name').value='';
+    toast(added?'常用路线已保存':'这条路线已在常用列表中');
+  });
+  $('#kk-route-name').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#kk-route-add').click();}});
+  $('#a-route').addEventListener('change',()=>{if(rememberRoute($('#a-route').value)){save();renderRouteOptions();}});
+  $('#m-table').addEventListener('input',e=>{
+    const el=e.target.closest('[data-route],[data-inv]');if(!el)return;
+    const k=el.dataset.route||el.dataset.inv;
+    S.money[k]=Object.assign({},S.money[k],el.dataset.route?{route:el.value.trim()}:{invoice:el.value.trim()});
+    save();
+  });
+  $('#m-table').addEventListener('change',e=>{
+    const el=e.target.closest('[data-amt],[data-st],[data-inv],[data-route],[data-paid]');if(!el)return;
+    const k=el.dataset.amt||el.dataset.st||el.dataset.inv||el.dataset.route||el.dataset.paid;
+    const o=Object.assign({},S.money[k]||{});
+    if(el.dataset.amt){const value=Number(el.value);if(!isFinite(value)||value<0){toast('金额请填写零或正数');renderMoney();return;}o.amount=value;}
+    if(el.dataset.st){o.status=el.value;o.reimbursed=el.value==='已到账';}
+    if(el.dataset.inv)o.invoice=el.value.trim();
+    if(el.dataset.route)o.route=el.value.trim();
+    if(el.dataset.paid){o.reimbursed=el.checked;if(el.checked)o.status='已到账';else if(o.status==='已到账'||moneyRows(curMonth).find(r=>r.key===k)?.status==='已到账')o.status='待提交';}
+    S.money[k]=o;if(el.dataset.route)rememberRoute(el.value);save();render();
+  });
+  $('#m-table').addEventListener('click',e=>{
+    const rm=e.target.closest('[data-rm2]');if(!rm)return;
+    const k=rm.dataset.rm2;
+    if(k.startsWith('m#'))S.extra=(S.extra||[]).filter(x=>'m#'+x.id!==k);
+    else S.money[k]=Object.assign({},S.money[k],{skip:true});
+    save();render();toast('已移除（“日历与数据”中可恢复报销改动）');
+  });
+  $('#a-add').addEventListener('click',()=>{
+    const title=$('#a-title').value.trim(),amount=Number($('#a-amt').value);
+    if(!title||!isFinite(amount)||amount<=0){toast('填写事项和正数金额');return;}
+    S.extra.push({id:'e'+Date.now(),date:$('#a-date').value||key(new Date()),title,cat:$('#a-cat').value,amount,invoice:'',status:'待提交',route:$('#a-route').value.trim()});
+    rememberRoute($('#a-route').value);save();$('#a-title').value='';$('#a-amt').value='150';$('#a-route').value='';render();toast('已添加');
+  });
+}
+
+/* ========== 数据面板 ========== */
+function openData() {
+  const inst = instances();
+  const fixN = Object.keys(S.fix || {}).length;
+  const months = csvMonths();
+  $("#dlg-kv").innerHTML = `
+    <dt>数据来源</dt><dd>${S.events ? "手动导入" : (CAL ? "飞书 CalDAV 同步" : "尚未导入")}</dd>
+    <dt>事件总数</dt><dd>${rawEvents().length} 个（展开 ${inst.length} 次）</dd>
+    <dt>手动修正</dt><dd>${fixN} 处 · 手动补课 ${(S.added || []).length} 节</dd>
+    <dt>月度导出</dt><dd>${months.length} 个月 · 各页面可下载 CSV</dd>
+    <dt>覆盖月份</dt><dd>${months.map(monthTitle).join("、") || "—"}</dd>`;
+  $("#dlg-fix").innerHTML = fixN
+    ? `已有 <b>${fixN}</b> 处手动修正，重新同步飞书日历会保留。`
+    : `还没有手动修正。点上课信息里的行就能改，改完重新同步也不会被覆盖。`;
+  $("#dlg").showModal();
+  renderSvcBox();
+}
+
+function bindData() {
+  $("#btn-data").addEventListener("click", openData);
+  $("#dlg-x").addEventListener("click", () => $("#dlg").close());
+  $("#dlg").addEventListener("click", e => { if (e.target === $("#dlg")) $("#dlg").close(); });
+  $("#imp-go").addEventListener("click", () => importText($("#imp").value));
+  $("#file").addEventListener("change", e => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => { $("#imp").value = String(r.result).slice(0, 200000); importText(String(r.result)); };
+    r.readAsText(f, "utf-8");
+  });
+  const drop = $("#drop");
+  ["dragover", "dragenter"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.style.borderColor = "var(--accent)"; }));
+  ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.style.borderColor = ""; }));
+  drop.addEventListener("drop", e => {
+    const f = e.dataTransfer.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => importText(String(r.result));
+    r.readAsText(f, "utf-8");
+  });
+  $("#exp-json").addEventListener("click", () => {
+    download("工作台备份_" + key(new Date()) + ".json", JSON.stringify({
+      settings: Object.assign({},settings(),{courseRoster:COURSES}), events: rawEvents().filter(e=>!e.manual), todos: rawTodos(),
+      fix: S.fix, added: S.added, extra: S.extra, money: S.money, overtime: S.overtime, routes: S.routes
+    }, null, 2));
+    toast("备份已下载");
+  });
+  $("#fix-clear").addEventListener("click", () => {
+    const n = Object.keys(S.fix || {}).length;
+    if (!n) { toast("还没有手动修正"); return; }
+    if (!confirm(`清掉 ${n} 处手动修正（标题、归类、改过的日期、隐藏的课），恢复成飞书原始内容？\n手动补的课和报销改动不受影响。`)) return;
+    S.fix = {};
+    save(); invalidate(); render(); $("#dlg").close(); toast("已清空修正");
+  });
+  $("#money-clear").addEventListener("click", () => {
+    if (!confirm("恢复报销改动：所有填过的金额、状态、发票、移除的条目都还原？")) return;
+    S.money = {};
+    save(); invalidate(); render(); $("#dlg").close(); toast("报销改动已还原");
+  });
+  $("#reset").addEventListener("click", () => {
+    if (!confirm("清掉本机所有改动（导入的日历、报销状态、待办修改），清空当前浏览器的工作台？")) return;
+    localStorage.removeItem(KEY);
+    S = blank();
+    stateToFile();
+    invalidate(); render(); $("#dlg").close(); toast("已清空本浏览器数据");
+  });
+}
+
+/* ========== ICS 解析 ========== */
+function unescapeICS(s) {
+  return String(s || "").replace(/\\n/gi, "\n").replace(/\\,/g, ",").replace(/\\;/g, ";").replace(/\\\\/g, "\\");
+}
+function parseICS(text) {
+  const lines = text.replace(/\r\n?/g, "\n").replace(/\n[ \t]/g, "").split("\n");
+  const out = [];
+  let cur = null;
+  for (const line of lines) {
+    if (/^BEGIN:VEVENT/i.test(line)) { cur = {}; continue; }
+    if (/^END:VEVENT/i.test(line)) { if (cur) { const e = buildICSEvent(cur); if (e) out.push(e); } cur = null; continue; }
+    if (!cur) continue;
+    const i = line.indexOf(":");
+    if (i < 0) continue;
+    const left = line.slice(0, i), val = line.slice(i + 1);
+    const seg = left.split(";");
+    const name = seg[0].toUpperCase();
+    const params = {};
+    seg.slice(1).forEach(p => { const j = p.indexOf("="); if (j > 0) params[p.slice(0, j).toUpperCase()] = p.slice(j + 1); });
+    if (cur[name] === undefined) cur[name] = { v: val, p: params };
+  }
+  return out;
+}
+function buildICSEvent(raw) {
+  const st = raw.DTSTART ? parseDate(raw.DTSTART.v) : null;
+  if (!st) return null;
+  const en = raw.DTEND ? parseDate(raw.DTEND.v) : new Date(st.getTime() + 36e5);
+  const allDay = raw.DTSTART.p && raw.DTSTART.p.VALUE === "DATE";
+  const rid = (raw.UID && raw.UID.v) || ("ics" + st.getTime() + Math.random().toString(36).slice(2, 6));
+  return {
+    id: rid, title: unescapeICS(raw.SUMMARY && raw.SUMMARY.v) || "(无标题)",
+    start: st.toISOString(), end: en.toISOString(), allDay,
+    location: unescapeICS(raw.LOCATION && raw.LOCATION.v) || "",
+    description: unescapeICS(raw.DESCRIPTION && raw.DESCRIPTION.v) || "",
+    calendar: "", rrule: raw.RRULE ? raw.RRULE.v.replace(/^RRULE:/i, "") : undefined
+  };
+}
+
+/* 从事件描述里抽「待办：xxx」 */
+function derivedTodos() {
+  const out = [];
+  instances().forEach(i => {
+    String(i.ev.description || "").split("\n").forEach(line => {
+      const m = line.match(/^\s*(?:待办|TODO|准备|提醒)\s*[:：]\s*(.+)$/i);
+      if (m) out.push({ id: "d" + i.ev.id + key(i.start) + m[1].slice(0, 6), title: m[1].trim(), due: key(i.start), src: i.ev.title });
+    });
+  });
+  return out;
+}
+
+/* ========== 导入 / 导出 ========== */
+function download(name, content, mime) {
+  const blob = new Blob([content], { type: (mime || "application/json") + ";charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+function importText(text) {
+  const t = (text || "").trim();
+  if (!t) { toast("内容为空"); return; }
+  let obj = null;
+  if (t.startsWith("{")) { try { obj = JSON.parse(t); } catch (e) { /* 不是 JSON，接着试 ICS */ } }
+  if (!obj) { const evs = parseICS(t); if (evs.length) obj = { events: evs }; }
+  if (!obj || !Array.isArray(obj.events)) { toast("没认出来：需要备份 JSON 或 ICS 文本"); return; }
+  const events = obj.events.map(e => ({
+    id: e.id || e.uid || ("i" + Math.random().toString(36).slice(2, 8)),
+    uid: e.uid || undefined,
+    title: e.title || e.summary || "(无标题)",
+    start: e.start || e.start_time || e.dtstart,
+    end: e.end || e.end_time || e.dtend,
+    allDay: !!(e.allDay || e.is_all_day),
+    location: e.location || "",
+    description: e.description || e.desc || "",
+    calendar: e.calendar || e.calendar_name || "",
+    rrule: e.rrule || e.recurrence || undefined,
+    expenses: e.expenses
+  })).filter(e => e.start);
+  if (obj.settings) S.settings = Object.assign({}, obj.settings, { termStart: obj.settings.termStart || (RAW.settings || {}).termStart });
+  if (obj.todos) S.todos = obj.todos;
+  if (obj.fix) S.fix = obj.fix;
+  if (obj.added) S.added = obj.added;
+  if (obj.extra) S.extra = obj.extra;
+  if (obj.money) S.money = obj.money;
+  if (obj.overtime) S.overtime = obj.overtime;
+  if (Array.isArray(obj.routes)) S.routes = obj.routes.map(normalizeRoute).filter(Boolean);
+  S.events = events.filter(e=>!(S.added||[]).some(a=>a.id===e.id));
+  refreshCourseRoster();
+  save(); invalidate(); render();
+  toast(`已导入 ${events.length} 个事件${obj.fix ? "，含 " + Object.keys(obj.fix).length + " 处修正" : ""}`);
+  $("#dlg").close();
+}
+
+/* ========== toast ========== */
+let tt = null;
+function toast(msg) {
+  const el = $("#toast");
+  el.textContent = msg; el.classList.add("on");
+  clearTimeout(tt); tt = setTimeout(() => el.classList.remove("on"), 2000);
+}
+
+/* GitHub Pages stores app state in this browser. No credentials or localhost calls. */
+function stateToFile() {}
+const pushFiles=stateToFile;
+async function autoSync(force){if(force)openData();}
+function renderSvcBox(){ $('#svc-box').innerHTML='<div class="svcline">GitHub Pages 在线版 · 数据保存在当前浏览器</div><p class="muted" style="margin-top:8px">飞书同步仍由原本机工作台完成。更新后导出 JSON 备份，再在这里导入。此页面不会上传日历、路线、金额或同步密码。</p>'; }
+function bindAutoBtn(){}
+/* ========== 事件绑定 / 启动 ========== */
+$("#month-bar").addEventListener("click", e => {
+  const b = e.target.closest("[data-m]");
+  if (b) { curMonth = b.dataset.m;
+    kkCourseWeek=sow(curMonth===monthOf(new Date())?new Date():new Date(curMonth+'-01T00:00:00'));
+    kkAgendaWeek=new Date(kkCourseWeek);
+    render(); }
+});
+
+$("#a-date").value = key(new Date());
+bindEdit(); bindTodo(); bindMoney(); bindData(); kkBind();
+render();
+
+/* 首次进入：把「待办：」派生项合并进待办 */
+(function seedDerived() {
+  const have = new Set(rawTodos().map(t => t.id));
+  derivedTodos().forEach(t => { if (!have.has(t.id)) { rawTodos().push(t); have.add(t.id); } });
+})();
+
+/* 先从数据文件捞回上次的修改，再触发自动同步 */
+
+};
+
+/* The public site starts empty and reads only an explicitly imported backup. */
+try { window.__wbInit(null); } catch(error){ console.error('工作台初始化失败',error); }
+</script>
+</body>
+</html>
