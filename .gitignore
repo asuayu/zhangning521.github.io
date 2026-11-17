@@ -5,3 +5,6 @@ private-export/
 __pycache__/
 node_modules/
 qa-output/
+_site/
+*.private.json
+calendar/

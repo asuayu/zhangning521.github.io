@@ -14,3 +14,8 @@ jobs:
         with:
           node-version: '22'
       - run: node tools/check.cjs
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: node tools/check-calendar-sync.cjs
+      - run: python -m unittest discover -s tools -p 'test_*.py'

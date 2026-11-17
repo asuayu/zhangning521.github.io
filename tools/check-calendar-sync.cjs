@@ -1,0 +1,24 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const {encrypt}=require('./encrypt-calendar.cjs');
+const context={crypto:crypto.webcrypto,TextEncoder,TextDecoder,atob,AbortSignal};vm.createContext(context);
+vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'../calendar-sync.js'),'utf8'),context);
+const api=context.KejianCalendar;
+const event=(id,start,calendar='主日历')=>({id,uid:id,title:'测试物理课',start,end:start.replace('10:00','12:00'),calendar});
+const data={meta:{source:'caldav',complete:true,calendars:['主日历'],rangeStart:'2026-09-01T00:00:00+08:00',rangeEnd:'2027-07-01T00:00:00+08:00',syncedAt:'2026-11-17T16:00:00+08:00'},events:[event('new','2026-11-18T10:00:00+08:00')]};
+const state={events:[event('deleted','2026-11-17T10:00:00+08:00'),event('old','2025-01-01T10:00:00+08:00'),event('ics','2026-11-17T10:00:00+08:00','其他导入')],fix:{series:{title:'我的修正'}},money:{one:{status:'已到账'}},overtime:{one:true},added:[{id:'manual'}],routes:['家 → 校区 → 家'],settings:{courseRoster:[{id:'a'}]}};
+const merged=api.merge(state,data);assert.deepEqual(Array.from(merged.events,e=>e.id),['old','ics','new']);
+for(const field of ['fix','money','overtime','added','routes','settings'])assert.equal(merged[field],state[field]);
+assert.equal(api.merge(merged,{...data,events:[]}).events.length,2,'confirmed empty calendars remove deleted source events');
+assert.throws(()=>api.merge(state,{...data,meta:{...data.meta,complete:false}}));
+assert.throws(()=>api.merge(state,{...data,events:[data.events[0],data.events[0]]}));
+assert.throws(()=>api.merge(state,{...data,events:[{...data.events[0],start:'invalid'}]}));
+(async()=>{
+ const phrase='test-only-passphrase-123456',envelope=encrypt(data,phrase);
+ assert.ok(!JSON.stringify(envelope).includes('测试物理课'));
+ assert.equal((await api.decrypt(envelope,phrase)).events[0].id,'new');
+ await assert.rejects(()=>api.decrypt(envelope,'wrong-passphrase-123456'));
+ const bytes=Buffer.from(envelope.ciphertext,'base64');bytes[0]^=1;
+ await assert.rejects(()=>api.decrypt({...envelope,ciphertext:bytes.toString('base64')},phrase));
+ assert.throws(()=>encrypt(data,'short'));
+ console.log('PASS: Node encryption / browser WebCrypto decryption, wrong key and tampering rejection, deletions, history and local edits preserved.');
+})().catch(e=>{console.error(e);process.exitCode=1;});
